@@ -30,7 +30,6 @@ def model_flags(model_name, flags):
     flags.DEFINE_string('valid_dataset', '', 'Path to validation set file (.npy or .csv).')
 
     flags.DEFINE_boolean('restore_model', False, 'If true, restore previous model corresponding to model name.')
-    flags.DEFINE_boolean('save_summery', False, 'If true, save Tensorboard logs.')
 
 
 ############################
@@ -68,9 +67,9 @@ def set_supervised_model_flags(model_name, flags):
         utils.valid_act_functions))
     flags.DEFINE_string('dec_act_func', 'linear', 'Activation function for the output layer. {}'.format(
         utils.valid_act_functions))
-    flags.DEFINE_string('cost_func', 'rmse', 'Cost function. {}'.format(utils.valid_supervised_cost_functions))
-    flags.DEFINE_float('dropout', 1.0, 'Hidden layers dropout.')
-    flags.DEFINE_string('task', 'regression', 'Which type of task to perform. ["regression", "classification"]')
+    flags.DEFINE_string('loss_func', 'mean_squared_error', 'Cost function. {}'.format(
+        utils.valid_supervised_cost_functions))
+    flags.DEFINE_float('dropout', 0.4, 'Hidden layers dropout.')
 
 
 ##############################

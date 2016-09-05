@@ -38,11 +38,11 @@ def run_supervised_model(model, global_params):
     test_y  = data.test.target
 
     # Train the model
-    model.fit(train_x, train_y, valid_x, valid_y, restore_previous_model=global_params['restore_model'])
+    model.fit(train_x, train_y, valid_x, valid_y)
 
     if test_x is not None:
-        test_cost = model.calc_total_cost(test_x, test_y)
-        print('Test Cost = {}'.format(test_cost))
+        test_cost = model.evaluate(test_x, test_y)
+        print('\nTest Cost = {}'.format(test_cost))
 
         # Save the predictions of the model
         if global_params['save_predictions']:

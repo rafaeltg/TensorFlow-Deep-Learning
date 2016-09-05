@@ -49,6 +49,7 @@ class Model:
         assert main_dir is not ''
         assert num_epochs > 0
         assert batch_size > 0
+        assert loss_func in utils.valid_loss_functions
         assert opt in utils.valid_optimization_functions
         assert learning_rate > 0
         assert momentum > 0 if opt == 'sgd' else True

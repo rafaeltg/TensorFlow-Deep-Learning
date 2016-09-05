@@ -12,7 +12,7 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 set_supervised_model_flags('mlp', flags)
-flags.DEFINE_string('layers', '64,32', 'String representing the architecture of the network.')
+flags.DEFINE_string('layers', '128,64,32', 'String representing the architecture of the network.')
 
 
 # Global parameters
@@ -34,7 +34,7 @@ mlp_params = {
     'layers':        utils.flag_to_list(FLAGS.layers, 'int'),
     'enc_act_func':  FLAGS.enc_act_func,
     'dec_act_func':  FLAGS.dec_act_func,
-    'cost_func':     FLAGS.cost_func,
+    'loss_func':     FLAGS.loss_func,
     'num_epochs':    FLAGS.num_epochs,
     'batch_size':    FLAGS.batch_size,
     'opt':           FLAGS.opt,
@@ -42,14 +42,10 @@ mlp_params = {
     'momentum':      FLAGS.momentum,
     'dropout':       float(FLAGS.dropout),
     'verbose':       FLAGS.verbose,
-    'seed':          FLAGS.seed,
-    'task':          FLAGS.task
+    'seed':          FLAGS.seed
 }
 
 
 if __name__ == '__main__':
 
-    # Create MLP object
-    mlp = MLP(**mlp_params)
-
-    run_supervised_model(mlp, global_params)
+    run_supervised_model(MLP(**mlp_params), global_params)
