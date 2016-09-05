@@ -18,7 +18,7 @@ class MLP(SupervisedModel):
     def __init__(self,
                  model_name='mlp',
                  main_dir='mlp/',
-                 layers=list([20, 30]),
+                 layers=list([128, 64, 32]),
                  enc_act_func='tanh',
                  dec_act_func='none',
                  cost_func='rmse',
@@ -36,8 +36,8 @@ class MLP(SupervisedModel):
         :param model_name: Name of the model.
         :param main_dir: Directory to save the model data.
         :param layers: Number of hidden units in each layer.
-        :param enc_act_func: Activation function for the hidden layers. ['tanh', 'sigmoid', 'relu', 'none']
-        :param dec_act_func: Activation function for the output layer. ['tanh', 'sigmoid', 'relu', 'none']
+        :param enc_act_func: Activation function for the hidden layers. ['tanh', 'sigmoid', 'relu', 'linear']
+        :param dec_act_func: Activation function for the output layer. ['tanh', 'sigmoid', 'relu', 'linear']
         :param cost_func: Cost function. ['rmse', 'cross_entropy', 'softmax_cross_entropy']
         :param num_epochs: Number of training epochs.
         :param batch_size: Size of each training mini-batch.

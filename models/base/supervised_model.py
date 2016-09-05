@@ -16,7 +16,7 @@ class SupervisedModel(Model):
     def __init__(self,
                  model_name,
                  main_dir,
-                 cost_func='rmse',
+                 loss_func='rmse',
                  num_epochs=10,
                  batch_size=100,
                  opt='adam',
@@ -28,7 +28,7 @@ class SupervisedModel(Model):
 
         super().__init__(model_name=model_name,
                          main_dir=main_dir,
-                         cost_func=cost_func,
+                         loss_func=loss_func,
                          num_epochs=num_epochs,
                          batch_size=batch_size,
                          opt=opt,
@@ -39,7 +39,7 @@ class SupervisedModel(Model):
                          task=task)
 
         # Validation
-        assert cost_func in utils.valid_supervised_cost_functions
+        assert loss_func in utils.valid_supervised_cost_functions
 
         # Supervised Model output values placeholder
         self._target_output = None

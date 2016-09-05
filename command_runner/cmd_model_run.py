@@ -71,7 +71,7 @@ def run_unsupervised_model(model, global_params):
     test_x  = data.test.data
 
     # Train the model
-    model.fit(train_x, valid_x, restore_previous_model=global_params['restore_model'])
+    model.fit(train_x, valid_x)
 
     if global_params['save_encode_train']:
         np.save(global_params['save_encode_train'], model.transform(train_x))
@@ -80,8 +80,8 @@ def run_unsupervised_model(model, global_params):
         np.save(global_params['save_encode_valid'], model.transform(valid_x))
 
     if test_x is not None:
-        test_cost = model.calc_total_cost(test_x)
-        print('Test Cost = {}'.format(test_cost))
+        test_cost = model.evaluate(data=test_x)
+        print('\nTest Cost = {}'.format(test_cost))
 
         if global_params['save_encode_test']:
             np.save(global_params['save_encode_test'], model.transform(test_x))

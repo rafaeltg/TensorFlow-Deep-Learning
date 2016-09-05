@@ -1,8 +1,9 @@
 import tensorflow as tf
 
+import utils.utilities as utils
 from command_runner.cmd_flags import set_unsupervised_model_flags
 from command_runner.cmd_model_run import run_unsupervised_model
-from models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder
+from models.autoencoder_models.deep_autoencoder import DeepAutoencoder
 
 # #################### #
 #   Flags definition   #
@@ -12,16 +13,10 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 
 # Global configuration
-set_unsupervised_model_flags('dae', flags)
+set_unsupervised_model_flags('deep_ae', flags)
 
-# Denoising Autoencoder specific parameters
-flags.DEFINE_integer('n_hidden', 128, 'Number of hidden units of the Denoising Autoencoder.')
-flags.DEFINE_string('corr_type', 'masking', 'Type of input corruption. ["masking", "gaussian"]')
-flags.DEFINE_float('corr_scale', 0.5, '')
-flags.DEFINE_float('corr_keep_prob', 0.8, '')
-flags.DEFINE_float('rho', 0.01, '')
-flags.DEFINE_float('n_beta', 3.0, '')
-flags.DEFINE_float('n_lambda', 0.0001, '')
+# Deep Autoencoder specific parameters
+flags.DEFINE_string('n_hidden', '256,128,64', 'Number of hidden units of the Deep Autoencoder.')
 
 
 # Global parameters
@@ -29,17 +24,16 @@ global_params = {
     'train_dataset':     FLAGS.train_dataset,
     'test_dataset':      FLAGS.test_dataset,
     'valid_dataset':     FLAGS.valid_dataset,
-    'restore_model':     FLAGS.restore_model,
     'save_encode_train': FLAGS.save_encode_train,
     'save_encode_valid': FLAGS.save_encode_valid,
     'save_encode_test':  FLAGS.save_encode_test,
 }
 
-# DAE parameters
-dae_params = {
+# Autoencoder parameters
+deep_ae_params = {
     'model_name':    FLAGS.model_name,
     'main_dir':      FLAGS.main_dir,
-    'n_hidden':      FLAGS.n_hidden,
+    'n_hidden':      utils.flag_to_list(FLAGS.n_hidden, 'int'),
     'enc_act_func':  FLAGS.enc_act_func,
     'dec_act_func':  FLAGS.dec_act_func,
     'loss_func':     FLAGS.loss_func,
@@ -48,12 +42,6 @@ dae_params = {
     'opt':           FLAGS.opt,
     'learning_rate': FLAGS.learning_rate,
     'momentum':      FLAGS.momentum,
-    'corr_type':     FLAGS.corr_type,
-    'corr_scale':    FLAGS.corr_scale,
-    'corr_keep_prob': float(FLAGS.corr_keep_prob),
-    'rho':           FLAGS.rho,
-    'n_beta':        FLAGS.n_beta,
-    'n_lambda':      FLAGS.n_lambda,
     'verbose':       FLAGS.verbose,
     'seed':          FLAGS.seed,
 }
@@ -61,7 +49,4 @@ dae_params = {
 
 if __name__ == '__main__':
 
-    # Create the Denoising Autoencoder object
-    dae = DenoisingAutoencoder(**dae_params)
-
-    run_unsupervised_model(dae, global_params)
+    run_unsupervised_model(DeepAutoencoder(**deep_ae_params), global_params)

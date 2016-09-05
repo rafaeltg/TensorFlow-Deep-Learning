@@ -66,7 +66,7 @@ def set_supervised_model_flags(model_name, flags):
 
     flags.DEFINE_string('enc_act_func', 'relu', 'Activation function for the hidden layers. {}'.format(
         utils.valid_act_functions))
-    flags.DEFINE_string('dec_act_func', 'none', 'Activation function for the output layer. {}'.format(
+    flags.DEFINE_string('dec_act_func', 'linear', 'Activation function for the output layer. {}'.format(
         utils.valid_act_functions))
     flags.DEFINE_string('cost_func', 'rmse', 'Cost function. {}'.format(utils.valid_supervised_cost_functions))
     flags.DEFINE_float('dropout', 1.0, 'Hidden layers dropout.')
@@ -87,9 +87,9 @@ def set_unsupervised_model_global_flags(model_name, flags):
 
     model_flags(model_name, flags)
 
-    flags.DEFINE_boolean('save_encode_train', '', 'Path to a .npy file to save the encoded training data.')
-    flags.DEFINE_boolean('save_encode_test', '', 'Path to a .npy file to save the encoded testing data.')
-    flags.DEFINE_boolean('save_encode_valid', '', 'Path to a .npy file to save the encoded validation data.')
+    flags.DEFINE_string('save_encode_train', '', 'Path to a .npy file to save the encoded training data.')
+    flags.DEFINE_string('save_encode_test', '', 'Path to a .npy file to save the encoded testing data.')
+    flags.DEFINE_string('save_encode_valid', '', 'Path to a .npy file to save the encoded validation data.')
 
 
 def set_unsupervised_model_flags(model_name, flags):
@@ -104,6 +104,6 @@ def set_unsupervised_model_flags(model_name, flags):
 
     flags.DEFINE_string('enc_act_func', 'relu', 'Activation function for the encoder layer. {}'.format(
         utils.valid_act_functions))
-    flags.DEFINE_string('dec_act_func', 'none', 'Activation function for the decode layer. {}'.format(
+    flags.DEFINE_string('dec_act_func', 'linear', 'Activation function for the decode layer. {}'.format(
         utils.valid_act_functions))
-    flags.DEFINE_string('cost_func', 'rmse', 'Cost function. {}'.format(utils.valid_unsupervised_cost_functions))
+    flags.DEFINE_string('loss_func', 'mean_squared_error', 'Cost function. {}'.format(utils.valid_loss_functions))

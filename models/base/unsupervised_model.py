@@ -2,7 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+from keras.layers import Input
+import keras.models as kmodels
 
 import utils.utilities as utils
 from models.base.model import Model
@@ -16,7 +17,7 @@ class UnsupervisedModel(Model):
     def __init__(self,
                  model_name,
                  main_dir,
-                 cost_func='rmse',
+                 loss_func='mean_squared_error',
                  num_epochs=10,
                  batch_size=100,
                  opt='adam',
@@ -28,7 +29,7 @@ class UnsupervisedModel(Model):
 
         super().__init__(model_name=model_name,
                          main_dir=main_dir,
-                         cost_func=cost_func,
+                         loss_func=loss_func,
                          num_epochs=num_epochs,
                          batch_size=batch_size,
                          opt=opt,
@@ -39,9 +40,13 @@ class UnsupervisedModel(Model):
                          task=task)
 
         # Validation
-        assert cost_func in utils.valid_unsupervised_cost_functions
+        assert loss_func in utils.valid_loss_functions
 
-        self._encode = None
+        self._encode_layer = None
+        self._decode_layer = None
+
+        self._encoder = None
+        self._decoder = None
 
     def build_model(self, n_input):
 
@@ -50,87 +55,85 @@ class UnsupervisedModel(Model):
         :return: self
         """
 
-        self.logger.info('Building {} model'.format(self.model_name))
+        self.logger.info('Building {} model - n_input = {}'.format(self.model_name, n_input))
 
-        self._create_placeholders(n_input)
+        self._input = Input(shape=(n_input,), name='x-input')
+
         self._create_layers(n_input)
 
-        self._create_cost_node(self._input)
-        self._create_optimizer_node()
+        self._model = kmodels.Model(input=self._input, output=self._decode_layer)
+
+        self._create_encoder_model()
+        self._create_decoder_model()
+
+        self._model.compile(optimizer=self.opt, loss=self.loss_func)
 
         self.logger.info('Done building {} model'.format(self.model_name))
-
-    def _create_placeholders(self, n_input):
-
-        """ Create the TensorFlow placeholders for the Unsupervised Model.
-        :param n_input: number of features of the first layer
-        :return: self
-        """
-
-        self._input = tf.placeholder('float', [None, n_input], name='x-input')
 
     def _create_layers(self, n_input):
         pass
 
-    def fit(self, train_set, valid_set, restore_previous_model=False, graph=None):
+    def _create_encoder_model(self):
+        pass
 
-        """ Fit the model to the data.
-        :param train_set: Training data. shape(n_samples, n_features)
-        :param valid_set: Validation data. shape(n_samples, n_features)
-        :param restore_previous_model: if true, a previous trained model with the same name of this model
-            is restored to continue training.
-        :param graph: TensorFlow graph object
-        :return: self
+    def _create_decoder_model(self):
+        pass
+
+    def fit(self, x_train, x_valid=None):
+
+        """
+        :param x_train: Training data. shape(n_samples, n_features)
+        :param x_valid: Validation data. shape(n_samples, n_features)
+        :return:
         """
 
         self.logger.info('Starting {} unsupervised training...'.format(self.model_name))
 
-        g = graph if graph is not None else self.tf_graph
+        self.build_model(x_train.shape[1])
 
-        with g.as_default():
-
-            self.build_model(train_set.shape[1])
-
-            with tf.Session() as self.tf_session:
-                self._initialize_tf(restore_previous_model)
-                self._train_model(train_set, valid_set)
-                self.tf_saver.save(self.tf_session, self.model_path)
+        self._model.fit(x=x_train,
+                        y=x_train,
+                        nb_epoch=self.num_epochs,
+                        batch_size=self.batch_size,
+                        shuffle=True,
+                        validation_data=(x_valid, x_valid),
+                        verbose=self.verbose)
 
         self.logger.info('Done {} unsupervised training...'.format(self.model_name))
 
-    def _train_model(self, train_set, valid_set):
-        pass
-
-    def transform(self, data, graph=None):
+    def transform(self, data):
 
         """ Transform data according to the model.
         :param data: Data to transform
-        :param graph: tf graph object
         :return: transformed data
         """
 
-        g = graph if graph is not None else self.tf_graph
+        self.logger.info('Transforming data...')
 
-        with g.as_default():
-            with tf.Session() as self.tf_session:
-                self.tf_saver.restore(self.tf_session, self.model_path)
-                encoded_data = self._encode.eval({self._input: data})
+        encoded_data = self._encoder.predict(x=data, verbose=0)
 
         return encoded_data
 
-    def calc_total_cost(self, data, graph=None):
+    def reconstruct(self, encoded_data):
 
-        """ Compute the total reconstruction cost.
+        """
+        :param encoded_data:
+        :return:
+        """
+
+        rec_data = self._decoder.predict(x=encoded_data, verbose=self.verbose)
+
+        return rec_data
+
+    def evaluate(self, data):
+
+        """ Compute the total reconstruction loss.
         :param data: Input data
-        :param graph: tensorflow graph object
         :return: reconstruction cost
         """
 
-        g = graph if graph is not None else self.tf_graph
+        self.logger.info('Evaluating reconstruction loss...')
 
-        with g.as_default():
-            with tf.Session() as self.tf_session:
-                self.tf_saver.restore(self.tf_session, self.model_path)
-                cost = self.cost.eval({self._input: data})
+        e = self._model.evaluate(x=data, y=data, verbose=self.verbose)
 
-        return cost
+        return e

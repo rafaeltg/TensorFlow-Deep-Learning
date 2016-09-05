@@ -6,10 +6,10 @@ import tensorflow as tf
 # Constants
 ONE = tf.constant(1.0)
 
-valid_act_functions               = ['sigmoid', 'tanh', 'relu', 'none']
-valid_supervised_cost_functions   = ['rmse', 'cross_entropy', 'softmax_cross_entropy']
-valid_unsupervised_cost_functions = ['rmse', 'cross_entropy', 'softmax_cross_entropy', 'sparse']
-valid_optimization_functions      = ['gradient_descent', 'ada_grad', 'momentum', 'adam', 'rms_prop']
+valid_act_functions               = ['sigmoid', 'tanh', 'relu', 'linear']
+valid_supervised_cost_functions   = ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy',  'custom']
+valid_loss_functions = ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy', 'custom']
+valid_optimization_functions      = ['sgd', 'rmsprop', 'ada_grad', 'ada_delta', 'adam']
 
 
 # ################### #
