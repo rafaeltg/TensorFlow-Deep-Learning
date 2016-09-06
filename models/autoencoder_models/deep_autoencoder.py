@@ -126,8 +126,8 @@ class DeepAutoencoder(UnsupervisedModel):
         """
 
         params = {
-            'enc': [l.get_weights() for l in self._encoder.layers[:]],
-            'dec': [l.get_weights() for l in self._decoder.layers[:]]
+            'enc': self._encoder.get_weights(),
+            'dec': self._decoder.get_weights()
         }
 
         return params
