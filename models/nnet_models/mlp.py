@@ -81,10 +81,8 @@ class MLP(SupervisedModel):
         :return: self
         """
         
-        self._model_layers = self._input
-        
         # Hidden layers
-        for n, l in enumerate(self.layers):
+        for l in self.layers:
             self._model_layers = Dense(output_dim=l,
                                        init='uniform',
                                        activation=self.enc_act_func)(self._model_layers)
