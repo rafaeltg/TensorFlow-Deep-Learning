@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.models import Sequential
-from models.base.model import Model
+from keras.layers import Input
+import keras.models as kmodels
 
 
 class SupervisedModel(Model):
@@ -46,9 +46,11 @@ class SupervisedModel(Model):
 
         self.logger.info('Building {} model'.format(self.model_name))
 
-        self._model = Sequential()
+        self._input = Input(shape=(n_input,), name='x-input')
 
         self._create_layers(n_input, n_output)
+        
+        self._model = kmodels.Model(input=self._input, output=self._model_layers)
 
         self._model.compile(optimizer=self.opt, loss=self.loss_func)
 
