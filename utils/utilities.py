@@ -1,43 +1,11 @@
 import os
 
 import numpy as np
-import tensorflow as tf
-
-# Constants
-ONE = tf.constant(1.0)
-
-valid_act_functions               = ['sigmoid', 'tanh', 'relu', 'linear']
-valid_supervised_cost_functions   = ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy',  'custom']
-valid_loss_functions = ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy', 'custom']
-valid_optimization_functions      = ['sgd', 'rmsprop', 'ada_grad', 'ada_delta', 'adam']
 
 
-# ################### #
-#   Network helpers   #
-# ################### #
-
-def activate(act_f, input_layer):
-
-    """
-    :param act_f:
-    :param input_layer:
-    :return:
-    """
-
-    if act_f == 'sigmoid':
-        return tf.nn.sigmoid(input_layer)
-
-    elif act_f == 'tanh':
-        return tf.nn.tanh(input_layer)
-
-    elif act_f == 'relu':
-        return tf.nn.relu(input_layer)
-
-    if (act_f is None) or (act_f == 'none'):
-        return input_layer
-
-    else:
-        raise Exception("Incorrect activation function")
+valid_act_functions          = ['sigmoid', 'tanh', 'relu', 'linear']
+valid_loss_functions         = ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy', 'custom']
+valid_optimization_functions = ['sgd', 'rmsprop', 'ada_grad', 'ada_delta', 'adam']
 
 
 # ################ #

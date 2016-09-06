@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.layers import Input, Dense
 import keras.models as kmodels
+from keras.layers import Input, Dense
 
 import utils.utilities as utils
 from models.base.unsupervised_model import UnsupervisedModel
@@ -119,8 +119,8 @@ class Autoencoder(UnsupervisedModel):
         """
 
         params = {
-            'enc': self._encoder.layers[1].get_weights(),
-            'dec': self._decoder.layers[1].get_weigths()
+            'enc': self._encoder.get_weights(),
+            'dec': self._decoder.get_weights()
         }
 
         return params

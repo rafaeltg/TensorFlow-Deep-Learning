@@ -23,8 +23,7 @@ class UnsupervisedModel(Model):
                  learning_rate=0.01,
                  momentum=0.5,
                  seed=-1,
-                 verbose=0,
-                 task='regression'):
+                 verbose=0):
 
         super().__init__(model_name=model_name,
                          main_dir=main_dir,
@@ -35,8 +34,7 @@ class UnsupervisedModel(Model):
                          learning_rate=learning_rate,
                          momentum=momentum,
                          seed=seed,
-                         verbose=verbose,
-                         task=task)
+                         verbose=verbose)
 
         self._encode_layer = None
         self._decode_layer = None

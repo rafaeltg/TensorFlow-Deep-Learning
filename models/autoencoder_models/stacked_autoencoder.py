@@ -2,126 +2,107 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
-
 import utils.utilities as utils
 from models.autoencoder_models.autoencoder import Autoencoder
-from models.nnet_models.mlp import MLP
+from keras.layers import Dense, Dropout
+from models.base.supervised_model import SupervisedModel
 
 
-class StackedAutoencoder(MLP):
+class StackedAutoencoder(SupervisedModel):
 
-    """ Implementation of Stacked Autoencoders using TensorFlow.
+    """ Implementation of Stacked Autoencoders.
     """
 
     def __init__(self,
                  model_name='sae',
                  main_dir='sae/',
-                 layers=list([128]),
-                 enc_act_func=list(['tanh']),
-                 dec_act_func=list(['none']),
-                 cost_func=list(['rmse']),
+                 layers=list([128, 64]),
+                 enc_act_func=list(['relu']),
+                 dec_act_func=list(['linear']),
+                 loss_func=list(['mean_squared_error']),
                  num_epochs=list([10]),
                  batch_size=list([10]),
                  opt=list(['adam']),
                  learning_rate=list([0.01]),
                  momentum=list([0.5]),
-                 rho=list([0.001]),
-                 n_beta=list([3.0]),
-                 n_lambda=list([0.0001]),
                  hidden_dropout=1.0,
-                 finetune_cost_func='rmse',
-                 finetune_act_func='relu',
+                 finetune_loss_func='mean_squared_error',
+                 finetune_enc_act_func='relu',
+                 finetune_dec_act_func='linear',
                  finetune_opt='adam',
                  finetune_learning_rate=0.001,
                  finetune_momentum=0.5,
                  finetune_num_epochs=10,
                  finetune_batch_size=100,
                  seed=-1,
-                 verbose=0,
-                 task='regression'):
+                 verbose=0):
 
         """
         :param layers: list containing the hidden units for each layer
-        :param enc_act_func: Activation function for the encoder. ['sigmoid', 'tanh', 'relu', 'none']
-        :param dec_act_func: Activation function for the decoder. ['sigmoid', 'tanh', 'none']
-        :param cost_func: Cost function. ['cross_entropy', 'rmse', 'softmax_cross_entropy', 'sparse'].
+        :param enc_act_func: Activation function for the encoder. ['sigmoid', 'tanh', 'relu', 'linear']
+        :param dec_act_func: Activation function for the decoder. ['sigmoid', 'tanh', 'relu', 'linear']
+        :param loss_func: Loss function. ['cross_entropy', 'mean_squared_error', 'softmax_cross_entropy', 'sparse'].
         :param num_epochs: Number of epochs for training.
         :param batch_size: Size of each mini-batch.
         :param opt: Optimizer to use. string, default 'gradient_descent'. ['gradient_descent', 'ada_grad', 'momentum', 'rms_prop']
         :param learning_rate: Initial learning rate.
         :param momentum: 'Momentum parameter.
-        :param rho:
-        :param n_beta:
-        :param n_lambda:
         :param hidden_dropout: hidden layers dropout parameter.
-        :param finetune_cost_func: cost function for the fine tunning step. ['cross_entropy', 'rmse', 'softmax_cross_entropy', 'sparse']
-        :param finetune_act_func: activation function for the finetuning step. ['sigmoid', 'tanh', 'relu', 'none']
+        :param finetune_loss_func: cost function for the fine tunning step. ['cross_entropy', 'mean_squared_error', 'softmax_cross_entropy', 'sparse']
+        :param finetune_enc_act_func: finetuning step hidden layers activation function. ['sigmoid', 'tanh', 'relu', 'linear']
+        :param finetune_dec_act_func: finetuning step output layer activation function. ['sigmoid', 'tanh', 'relu', 'linear']
         :param finetune_opt: optimizer for the finetuning phase
         :param finetune_learning_rate: learning rate for the finetuning.
         :param finetune_momentum: momentum for the finetuning.
         :param finetune_num_epochs: Number of epochs for the finetuning.
         :param finetune_batch_size: Size of each mini-batch for the finetuning.
         :param seed: positive integer for seeding random generators. Ignored if < 0.
-        :param task: ['regression', 'classification']
         """
 
-        # Finetuning network
         super().__init__(model_name=model_name,
                          main_dir=main_dir,
-                         layers=layers,
-                         enc_act_func=finetune_act_func,
-                         dec_act_func='none',
-                         cost_func=finetune_cost_func,
+                         loss_func=finetune_loss_func,
                          num_epochs=finetune_num_epochs,
                          batch_size=finetune_batch_size,
                          opt=finetune_opt,
                          learning_rate=finetune_learning_rate,
                          momentum=finetune_momentum,
-                         dropout=hidden_dropout,
                          verbose=verbose,
-                         seed=seed,
-                         task=task)
+                         seed=seed)
 
         self.logger.info('{} __init__'.format(__class__.__name__))
+
+        # Validations
+        assert len(layers) > 0
+        assert all([l > 0 for l in layers])
+        assert finetune_enc_act_func in utils.valid_act_functions
+        assert finetune_dec_act_func in utils.valid_act_functions
+        assert 0 <= hidden_dropout <= 1.0
 
         # Autoencoder parameters
         ae_args = {
             'layers':        layers,
             'enc_act_func':  enc_act_func,
             'dec_act_func':  dec_act_func,
-            'cost_func':     cost_func,
+            'loss_func':     loss_func,
             'num_epochs':    num_epochs,
             'batch_size':    batch_size,
             'opt':           opt,
             'learning_rate': learning_rate,
             'momentum':      momentum,
-            'rho':           rho,
-            'n_beta':        n_beta,
-            'n_lambda':      n_lambda
         }
 
         self.ae_args = utils.expand_args(ae_args)
 
         # Autoencoders list
         self.autoencoders = []
-        self.autoencoder_graphs = []
+
+        # Finetuning parameters
+        self.enc_act_func = finetune_enc_act_func
+        self.dec_act_func = finetune_dec_act_func
+        self.dropout = hidden_dropout
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
-
-    def _create_layers(self, n_input, n_output):
-
-        """
-        :param n_input:
-        :param n_output:
-        :return: self
-        """
-
-        # Create autoencoder layers
-        self._create_autoencoders()
-
-        # Create finetuning network
-        super()._create_layers(n_input, n_output)
 
     def _create_autoencoders(self):
 
@@ -130,9 +111,6 @@ class StackedAutoencoder(MLP):
         """
 
         self.logger.info('Creating {} pretrain nodes...'.format(self.model_name))
-
-        self.autoencoders = []
-        self.autoencoder_graphs = []
 
         for l, layer in enumerate(self.ae_args['layers']):
 
@@ -143,67 +121,82 @@ class StackedAutoencoder(MLP):
                                                  n_hidden=layer,
                                                  enc_act_func=self.ae_args['enc_act_func'][l],
                                                  dec_act_func=self.ae_args['dec_act_func'][l],
-                                                 cost_func=self.ae_args['cost_func'][l],
+                                                 loss_func=self.ae_args['loss_func'][l],
                                                  num_epochs=self.ae_args['num_epochs'][l],
                                                  batch_size=self.ae_args['batch_size'][l],
                                                  opt=self.ae_args['opt'][l],
                                                  learning_rate=self.ae_args['learning_rate'][l],
                                                  momentum=self.ae_args['momentum'][l],
-                                                 rho=self.ae_args['rho'][l],
-                                                 n_beta=self.ae_args['n_beta'][l],
-                                                 n_lambda=self.ae_args['n_lambda'][l],
                                                  verbose=self.verbose))
-
-            self.autoencoder_graphs.append(tf.Graph())
 
         self.logger.info('Done creating {} pretrain nodes...'.format(self.model_name))
 
-    def pretrain(self, train_set, valid_set):
+    def _create_layers(self, n_input, n_output):
 
-        """ Perform unsupervised pretraining of the stack of denoising autoencoders.
-        :param train_set: training set
-        :param valid_set: validation set
-        :return: return data encoded by the last layer
+        """ Create the finetuning network layers
+        :param n_input:
+        :param n_output:
+        :return: self
+        """
+
+        # Hidden layers
+        for n, l in enumerate(self.ae_args['layers']):
+
+            # Get autoencoder parameters.
+            # params[0] = weights
+            # params[1] = biases
+            params = self.autoencoders[n].get_model_parameters()['enc']
+
+            self._model.add(Dense(output_dim=l,
+                                  weights=params,
+                                  activation=self.enc_act_func,
+                                  input_dim=n_input if n == 0 else None))
+
+            if self.dropout < 1:
+                self._model.add(Dropout(p=self.dropout))
+
+        # Output layer
+        self._model.add(Dense(output_dim=n_output,
+                              activation=self.dec_act_func))
+
+    def _pretrain(self, x_train, x_valid):
+
+        """ Perform unsupervised pretraining of the stack of autoencoders.
+        :param x_train: training set
+        :param x_valid: validation set
+        :return: self
         """
 
         self.logger.info('Starting {} unsupervised pretraining...'.format(self.model_name))
 
-        next_train = train_set
-        next_valid = valid_set
+        self._create_autoencoders()
+
+        next_train = x_train
+        next_valid = x_valid
 
         for l, autoenc in enumerate(self.autoencoders):
 
-            self.logger.info('Training layer {}'.format(l+1))
-
-            graph = self.autoencoder_graphs[l]
+            self.logger.info('Pre-training layer {}'.format(l+1))
 
             # Pretrain a single autoencoder
-            autoenc.fit(next_train, next_valid, graph=graph)
+            autoenc.fit(next_train, next_valid)
 
-            with graph.as_default():
-                # Get new wieghts and biases
-                params = autoenc.get_model_parameters(graph=graph)
-
-                # Set finetuning network paramenters
-                self._layer_nodes[l].set_weights(params['enc_w'])
-                self._layer_nodes[l].set_biases(params['enc_b'])
-
-                # Encode the data for the next layer.
-                next_train = autoenc.transform(data=next_train, graph=graph)
-                next_valid = autoenc.transform(data=next_valid, graph=graph)
+            # Encode the data for the next layer.
+            next_train = autoenc.transform(data=next_train)
+            next_valid = autoenc.transform(data=next_valid)
 
         self.logger.info('Done {} unsupervised pretraining...'.format(self.model_name))
 
-    def _train_model(self, train_set, train_labels, valid_set, valid_labels):
+    def fit(self, x_train, y_train, x_valid, y_valid):
 
-        """ Train the model.
-        :param train_set: training set
-        :param train_labels: training labels
-        :param valid_set: validation set
-        :param valid_labels: validation labels
+        """
+        :param x_train:
+        :param y_train:
+        :param x_valid:
+        :param y_valid:
         :return: self
         """
 
-        self.pretrain(train_set, valid_set)
+        self._pretrain(x_train, x_valid)
 
-        super()._train_model(train_set, train_labels, valid_set, valid_labels)
+        super().fit(x_train, y_train, x_valid, y_valid)

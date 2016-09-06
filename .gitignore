@@ -2,10 +2,7 @@
 __pycache__/
 *.py[cod]
 
-save/
-
 .idea/
-data/
 
 *.py~
 

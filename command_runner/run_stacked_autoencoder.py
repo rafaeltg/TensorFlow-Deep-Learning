@@ -16,19 +16,15 @@ FLAGS = flags.FLAGS
 set_supervised_model_flags('sae', flags)
 
 # Autoencoder layers specific parameters
-flags.DEFINE_string('layers', '512,256,', 'Comma-separated values for the layers in the SAE.')
-flags.DEFINE_string('ae_enc_act_func', 'sigmoid,', 'Activation function for the encoder. {}'.format(utils.valid_act_functions))
-flags.DEFINE_string('ae_dec_act_func', 'none', 'Activation function for the decoder. {}'.format(utils.valid_act_functions))
-flags.DEFINE_string('ae_cost_func', 'rmse', 'Cost function of each layer. {}'.format(utils.valid_loss_functions))
+flags.DEFINE_string('layers', '128,64,', 'Comma-separated values for the layers in the SAE.')
+flags.DEFINE_string('ae_enc_act_func', 'relu,', 'Activation function for the encoder. {}'.format(utils.valid_act_functions))
+flags.DEFINE_string('ae_dec_act_func', 'linear', 'Activation function for the decoder. {}'.format(utils.valid_act_functions))
+flags.DEFINE_string('ae_loss_func', 'mean_squared_error', 'Loss function of each layer. {}'.format(utils.valid_loss_functions))
 flags.DEFINE_string('ae_num_epochs', '30,', 'Number of training epochs of each layer.')
 flags.DEFINE_string('ae_batch_size', '200,', 'Size of each training mini-batch of each layer.')
-flags.DEFINE_string('ae_xavier_init', '1,', 'Value for the constant in xavier weights initialization.')
 flags.DEFINE_string('ae_opt', 'adam,', 'Optimizer algorithm. {}'.format(utils.valid_optimization_functions))
 flags.DEFINE_string('ae_learning_rate', '0.01,', 'Initial learning rate.')
 flags.DEFINE_string('ae_momentum', '0.5,', 'Momentum parameter.')
-flags.DEFINE_string('ae_rho', '0.001,', 'Sparse autoencoder parameter rho.')
-flags.DEFINE_string('ae_n_lambda', '3.0,', 'Sparse autoencoder parameter lambda.')
-flags.DEFINE_string('ae_n_beta', '0.0001,', 'Sparse autoencoder parameter beta.')
 
 
 # Global parameters
@@ -50,26 +46,23 @@ sae_params = {
     'layers':                 utils.flag_to_list(FLAGS.layers, 'int'),
     'enc_act_func':           utils.flag_to_list(FLAGS.ae_enc_act_func, 'str'),
     'dec_act_func':           utils.flag_to_list(FLAGS.ae_dec_act_func, 'str'),
-    'cost_func':              utils.flag_to_list(FLAGS.ae_cost_func, 'str'),
+    'loss_func':              utils.flag_to_list(FLAGS.ae_loss_func, 'str'),
     'num_epochs':             utils.flag_to_list(FLAGS.ae_num_epochs, 'int'),
     'batch_size':             utils.flag_to_list(FLAGS.ae_batch_size, 'int'),
     'opt':                    utils.flag_to_list(FLAGS.ae_opt, 'str'),
     'learning_rate':          utils.flag_to_list(FLAGS.ae_learning_rate, 'float'),
     'momentum':               utils.flag_to_list(FLAGS.ae_momentum, 'float'),
-    'rho':                    utils.flag_to_list(FLAGS.ae_rho, 'float'),
-    'n_beta':                 utils.flag_to_list(FLAGS.ae_n_beta, 'float'),
-    'n_lambda':               utils.flag_to_list(FLAGS.ae_n_lambda, 'float'),
     'hidden_dropout':         float(FLAGS.dropout),
-    'finetune_cost_func':     FLAGS.cost_func,
-    'finetune_act_func':      FLAGS.enc_act_func,
+    'finetune_loss_func':     FLAGS.loss_func,
+    'finetune_enc_act_func':  FLAGS.enc_act_func,
+    'finetune_dec_act_func':  FLAGS.dec_act_func,
     'finetune_opt':           FLAGS.opt,
     'finetune_learning_rate': FLAGS.learning_rate,
     'finetune_momentum':      FLAGS.momentum,
     'finetune_num_epochs':    FLAGS.num_epochs,
     'finetune_batch_size':    FLAGS.batch_size,
     'seed':                   FLAGS.seed,
-    'verbose':                FLAGS.verbose,
-    'task':                   FLAGS.task
+    'verbose':                FLAGS.verbose
 }
 
 

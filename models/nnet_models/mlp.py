@@ -2,10 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import tensorflow as tf
+from keras.layers import Dense, Dropout
 
 import utils.utilities as utils
-from keras.layers import Dense, Dropout
 from models.base.supervised_model import SupervisedModel
 
 
