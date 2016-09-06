@@ -47,6 +47,7 @@ class SupervisedModel(Model):
         self.logger.info('Building {} model'.format(self.model_name))
 
         self._input = Input(shape=(n_input,), name='x-input')
+        self._model_layers = self._input
 
         self._create_layers(n_input, n_output)
         
