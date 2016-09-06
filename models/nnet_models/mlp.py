@@ -80,20 +80,22 @@ class MLP(SupervisedModel):
         :param n_output:
         :return: self
         """
-
+        
+        self._model_layers = self._input
+        
         # Hidden layers
         for n, l in enumerate(self.layers):
-            self._model.add(Dense(output_dim=l,
-                                  init='uniform',
-                                  activation=self.enc_act_func,
-                                  input_dim=n_input if n == 0 else None))
+            self._model_layers = Dense(output_dim=l,
+                                       init='uniform',
+                                       activation=self.enc_act_func)(self._model_layers)
 
             if self.dropout < 1:
-                self._model.add(Dropout(p=self.dropout))
+                self._model_layers = Dropout(p=self.dropout)(self._model_layers)
 
         # Output layer
-        self._model.add(Dense(output_dim=n_output,
-                              activation=self.dec_act_func))
+        self._model_layers = Dense(output_dim=n_output,
+                                   init='uniform',
+                                   activation=self.dec_act_func)(self._model_layers)
 
     def get_model_parameters(self):
 
