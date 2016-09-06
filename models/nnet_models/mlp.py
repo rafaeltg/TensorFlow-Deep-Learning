@@ -101,6 +101,4 @@ class MLP(SupervisedModel):
         :return: model parameters
         """
 
-        params = [l.get_weigths for l in self._model.layers]
-
-        return params
+        return self._model.get_weights()
