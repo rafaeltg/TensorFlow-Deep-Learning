@@ -3,9 +3,9 @@ from __future__ import division
 from __future__ import print_function
 
 import utils.utilities as utils
+from models.base.supervised_model import SupervisedModel
 from models.autoencoder_models.autoencoder import Autoencoder
 from keras.layers import Dense, Dropout
-from models.base.supervised_model import SupervisedModel
 
 
 class StackedAutoencoder(SupervisedModel):
@@ -140,24 +140,24 @@ class StackedAutoencoder(SupervisedModel):
         """
 
         # Hidden layers
-        for n, l in enumerate(self.ae_args['layers']):
+        for l in self.ae_args['layers']:
 
             # Get autoencoder parameters.
             # params[0] = weights
             # params[1] = biases
             params = self.autoencoders[n].get_model_parameters()['enc']
-
-            self._model.add(Dense(output_dim=l,
-                                  weights=params,
-                                  activation=self.enc_act_func,
-                                  input_dim=n_input if n == 0 else None))
+            
+            self._model_layers = Dense(output_dim=l,
+                                       weights=params,
+                                       activation=self.enc_act_func)(self._model_layers)
 
             if self.dropout < 1:
-                self._model.add(Dropout(p=self.dropout))
+                self._model_layers = Dropout(p=self.dropout)(self._model_layers)
 
-        # Output layer
-        self._model.add(Dense(output_dim=n_output,
-                              activation=self.dec_act_func))
+       # Output layer
+        self._model_layers = Dense(output_dim=n_output,
+                                   init='uniform',
+                                   activation=self.dec_act_func)(self._model_layers)
 
     def _pretrain(self, x_train, x_valid):
 
