@@ -1,6 +1,5 @@
 import tensorflow as tf
 
-import utils.utilities as utils
 from command_runner.cmd_flags import set_unsupervised_model_flags
 from command_runner.cmd_model_run import run_unsupervised_model
 from models.autoencoder_models.variational_autoencoder import VariationalAutoencoder
@@ -16,8 +15,8 @@ FLAGS = flags.FLAGS
 set_unsupervised_model_flags('vae', flags)
 
 # Variational Autoencoder specific parameters
-flags.DEFINE_string('n_hidden', '256,128', 'Number of hidden units of each intermediate layer.')
-flags.DEFINE_integer('n_latent', 10, 'Number of hidden units in the latent layer.')
+flags.DEFINE_integer('n_hidden', 256, 'Number of hidden units of each intermediate layer.')
+flags.DEFINE_integer('n_latent', 5, 'Number of hidden units in the latent layer.')
 
 
 # Global parameters
@@ -35,7 +34,7 @@ vae_params = {
     'model_name':    FLAGS.model_name,
     'main_dir':      FLAGS.main_dir,
     'n_latent':      FLAGS.n_latent,
-    'n_hidden':      utils.flag_to_list(FLAGS.n_hidden, 'int'),
+    'n_hidden':      FLAGS.n_hidden,
     'enc_act_func':  FLAGS.enc_act_func,
     'dec_act_func':  FLAGS.dec_act_func,
     'num_epochs':    FLAGS.num_epochs,

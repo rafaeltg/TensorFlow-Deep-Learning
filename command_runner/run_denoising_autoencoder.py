@@ -15,14 +15,9 @@ FLAGS = flags.FLAGS
 set_unsupervised_model_flags('dae', flags)
 
 # Denoising Autoencoder specific parameters
-flags.DEFINE_integer('n_hidden', 128, 'Number of hidden units of the Denoising Autoencoder.')
-flags.DEFINE_string('corr_type', 'masking', 'Type of input corruption. ["masking", "gaussian"]')
-flags.DEFINE_float('corr_scale', 0.5, '')
-flags.DEFINE_float('corr_keep_prob', 0.8, '')
-flags.DEFINE_float('rho', 0.01, '')
-flags.DEFINE_float('n_beta', 3.0, '')
-flags.DEFINE_float('n_lambda', 0.0001, '')
-
+flags.DEFINE_integer('n_hidden', 32, 'Number of hidden units of the Denoising Autoencoder.')
+flags.DEFINE_string('corr_type', 'gaussian', 'Type of input corruption. ["masking", "gaussian"]')
+flags.DEFINE_float('corr_param', 0.3, '')
 
 # Global parameters
 global_params = {
@@ -49,11 +44,7 @@ dae_params = {
     'learning_rate': FLAGS.learning_rate,
     'momentum':      FLAGS.momentum,
     'corr_type':     FLAGS.corr_type,
-    'corr_scale':    FLAGS.corr_scale,
-    'corr_keep_prob': float(FLAGS.corr_keep_prob),
-    'rho':           FLAGS.rho,
-    'n_beta':        FLAGS.n_beta,
-    'n_lambda':      FLAGS.n_lambda,
+    'corr_param':    FLAGS.corr_param,
     'verbose':       FLAGS.verbose,
     'seed':          FLAGS.seed,
 }

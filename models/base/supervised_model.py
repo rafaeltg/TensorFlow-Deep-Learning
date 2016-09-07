@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from keras.layers import Input
 import keras.models as kmodels
+from models.base.model import Model
 
 
 class SupervisedModel(Model):

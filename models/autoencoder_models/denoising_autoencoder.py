@@ -2,9 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
 from models.autoencoder_models.autoencoder import Autoencoder
-
+from keras.layers.core import Dense
+from keras.layers.noise import GaussianDropout, GaussianNoise
 
 class DenoisingAutoencoder(Autoencoder):
 
@@ -14,7 +14,7 @@ class DenoisingAutoencoder(Autoencoder):
     def __init__(self,
                  model_name='dae',
                  main_dir='dae/',
-                 n_hidden=256,
+                 n_hidden=32,
                  enc_act_func='relu',
                  dec_act_func='linear',
                  loss_func='mean_squared_error',
@@ -24,8 +24,7 @@ class DenoisingAutoencoder(Autoencoder):
                  learning_rate=0.01,
                  momentum=0.5,
                  corr_type='gaussian',
-                 corr_scale=0.1,
-                 corr_keep_prob=0.9,
+                 corr_param=0.1,
                  verbose=0,
                  seed=-1):
 
@@ -40,8 +39,8 @@ class DenoisingAutoencoder(Autoencoder):
         :param learning_rate: Initial learning rate
         :param momentum: Momentum parameter
         :param corr_type: Type of input corruption. ["masking", "gaussian"]
-        :param corr_scale:
-        :param corr_keep_prob:
+        :param corr_param: 'scale' parameter for Aditive Gaussian Corruption ('gaussian') or
+                           'keep_prob' parameter for Masking Corruption ('masking')
         :param verbose: Level of verbosity. 0 - silent, 1 - print accuracy.
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
@@ -64,55 +63,41 @@ class DenoisingAutoencoder(Autoencoder):
 
         # Validations
         assert corr_type in ['masking', 'gaussian']
-        assert corr_scale > 0 if corr_type == 'gaussian' else True
-        assert 0 <= corr_keep_prob <= 1.0 if corr_type == 'masking' else True
+        assert corr_param > 0 if corr_type == 'gaussian' else True
+        assert 0 <= corr_param <= 1.0 if corr_type == 'masking' else True
 
         self.corr_type = corr_type
-        self.corr_scale = corr_scale
-        self.corr_keep_prob = corr_keep_prob
+        self.corr_param = corr_param
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def fit(self, x_train, x_valid=None):
+    def _create_layers(self, n_inputs):
 
         """
-        :param x_train: Training data. shape(n_samples, n_features)
-        :param x_valid: Validation data. shape(n_samples, n_features)
+        :param n_inputs:
         :return:
         """
 
-        self.logger.info('Starting {} unsupervised training...'.format(self.model_name))
+        self.logger.info('Creating {} layers'.format(self.model_name))
 
-        self.build_model(x_train.shape[1])
+        self._corrupt_input()
 
-        corr_x_train = self._corrupt_input(x_train)
-        corr_x_valid = self._corrupt_input(x_valid)
+        self._encode_layer = Dense(output_dim=self.n_hidden,
+                                   activation=self.enc_act_func)(self._encode_layer)
 
-        self._model.fit(x=corr_x_train,
-                        y=x_train,
-                        nb_epoch=self.num_epochs,
-                        batch_size=self.batch_size,
-                        shuffle=True,
-                        validation_data=(corr_x_valid, x_valid),
-                        verbose=self.verbose)
+        self._decode_layer = Dense(output_dim=n_inputs,
+                                   activation=self.dec_act_func)(self._encode_layer)
 
-        self.logger.info('Done {} unsupervised training...'.format(self.model_name))
-
-    def _corrupt_input(self, x):
+    def _corrupt_input(self):
 
         """
-        :param x:
         :return:
         """
 
         self.logger.info('Corrupting Input Data')
 
-        corr_x = None
-
         if self.corr_type == 'masking':
-            corr_x = x * (np.random.uniform(0, 1, x.shape) < self.corr_keep_prob).astype(int)
+            self._encode_layer = GaussianDropout(p=self.corr_param)(self._input)
 
-        elif self.corr_type == 'gaussian':
-            corr_x = x + self.corr_scale * np.random.normal(loc=0.0, scale=1.0, size=x.shape)
-
-        return corr_x
+        else:
+            self._encode_layer = GaussianNoise(sigma=self.corr_param)(self._input)

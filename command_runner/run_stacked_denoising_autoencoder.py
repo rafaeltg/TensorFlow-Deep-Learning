@@ -16,7 +16,7 @@ FLAGS = flags.FLAGS
 set_supervised_model_flags('sdae', flags)
 
 # Denoising Autoencoder layers specific parameters
-flags.DEFINE_string('layers', '128,64,', 'Comma-separated values for the layers in the SDAE.')
+flags.DEFINE_string('layers', '128,64,32,', 'Comma-separated values for the layers in the SDAE.')
 flags.DEFINE_string('dae_enc_act_func', 'sigmoid,', 'Activation function for the encoder. {}'.format(utils.valid_act_functions))
 flags.DEFINE_string('dae_dec_act_func', 'linear', 'Activation function for the decoder. {}'.format(utils.valid_act_functions))
 flags.DEFINE_string('dae_loss_func', 'mean_squared_error', 'Cost function of each layer. {}'.format(utils.valid_loss_functions))

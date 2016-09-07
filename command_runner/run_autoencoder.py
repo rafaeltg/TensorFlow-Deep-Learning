@@ -15,10 +15,7 @@ FLAGS = flags.FLAGS
 set_unsupervised_model_flags('ae', flags)
 
 # Autoencoder specific parameters
-flags.DEFINE_integer('n_hidden', 128, 'Number of hidden units of the Autoencoder.')
-flags.DEFINE_float('rho', 0.01, '')
-flags.DEFINE_float('n_beta', 3.0, '')
-flags.DEFINE_float('n_lambda', 0.0001, '')
+flags.DEFINE_integer('n_hidden', 32, 'Number of hidden units of the Autoencoder.')
 
 
 # Global parameters
@@ -44,9 +41,6 @@ ae_params = {
     'opt':           FLAGS.opt,
     'learning_rate': FLAGS.learning_rate,
     'momentum':      FLAGS.momentum,
-    'rho':           FLAGS.rho,
-    'n_beta':        FLAGS.n_beta,
-    'n_lambda':      FLAGS.n_lambda,
     'verbose':       FLAGS.verbose,
     'seed':          FLAGS.seed,
 }

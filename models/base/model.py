@@ -24,7 +24,6 @@ class Model:
                  opt='adam',
                  learning_rate=0.001,
                  momentum=0.1,
-                 task='regression',
                  seed=-1,
                  verbose=0):
 
@@ -37,7 +36,6 @@ class Model:
         :param opt:
         :param learning_rate:
         :param momentum:
-        :param task: 'classification' or 'regression'
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         :param verbose: Level of verbosity. 0 - silent, 1 - print.
         """
@@ -55,12 +53,8 @@ class Model:
         self.model_name = model_name
         self.main_dir = main_dir
 
-        # Model input data
-        self._input = None
-
         self._model = None
-
-        # Cost function
+        self._input = None # Model input data
         self.loss_func = loss_func
 
         # Training parameters
@@ -74,7 +68,6 @@ class Model:
             np.random.seed(seed)
             tf.set_random_seed(seed)
 
-        self.task = task
         self.verbose = verbose
 
         # Create the logger
@@ -83,13 +76,10 @@ class Model:
     @staticmethod
     def get_optimizer(opt_func, learning_rate, momentum):
 
-        if opt_func == 'custom':
-            return None
-
         if opt_func == 'sgd':
             return KOpt.SGD(lr=learning_rate, momentum=momentum)
 
-        if opt_func == 'rms_prop':
+        if opt_func == 'rmsprop':
             return KOpt.RMSprop(lr=learning_rate)
 
         if opt_func == 'ada_grad':

@@ -24,9 +24,8 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
                  opt=list(['adam']),
                  learning_rate=list([0.01]),
                  momentum=list([0.5]),
-                 corr_type=list(['masking']),
-                 corr_scale=list([0.1]),
-                 corr_keep_prob=list([0.9]),
+                 corr_type=list(['gaussian']),
+                 corr_param=list([0.1]),
                  hidden_dropout=1.0,
                  finetune_loss_func='mean_squared_error',
                  finetune_enc_act_func='relu',
@@ -50,8 +49,8 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
         :param learning_rate: Initial learning rate.
         :param momentum: 'Momentum parameter.
         :param corr_type: type of input corruption. ["masking", "gaussian"]
-        :param corr_scale: scale parameter for Aditive Gaussian Corruption ('gaussian')
-        :param corr_keep_prob: keep_prob parameter for Masking Corruption ('masking')
+        :param corr_param: 'scale' parameter for Aditive Gaussian Corruption ('gaussian') or
+                           'keep_prob' parameter for Masking Corruption ('masking')
         :param hidden_dropout: hidden layers dropout parameter.
         :param finetune_loss_func: Cost function for the fine tunning step. ['cross_entropy', 'rmse', 'softmax_cross_entropy']
         :param finetune_enc_act_func: finetuning step hidden layers activation function. ['sigmoid', 'tanh', 'relu', 'linear']
@@ -91,8 +90,7 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
 
         # Denoising Autoencoder parameters
         self.ae_args['corr_type']      = corr_type
-        self.ae_args['corr_scale']     = corr_scale
-        self.ae_args['corr_keep_prob'] = corr_keep_prob
+        self.ae_args['corr_param']     = corr_param
 
         self.ae_args = utils.expand_args(self.ae_args)
 
@@ -124,8 +122,7 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
                                                           learning_rate=self.ae_args['learning_rate'][l],
                                                           momentum=self.ae_args['momentum'][l],
                                                           corr_type=self.ae_args['corr_type'][l],
-                                                          corr_scale=self.ae_args['corr_scale'][l],
-                                                          corr_keep_prob=self.ae_args['corr_keep_prob'][l],
+                                                          corr_param=self.ae_args['corr_param'][l],
                                                           verbose=self.verbose))
 
         self.logger.info('Done creating {} pretrain nodes...'.format(self.model_name))

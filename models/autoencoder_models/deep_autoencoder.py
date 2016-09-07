@@ -18,7 +18,7 @@ class DeepAutoencoder(UnsupervisedModel):
     def __init__(self,
                  model_name='deep_ae',
                  main_dir='deep_ae/',
-                 n_hidden=list([256, 128, 64]),
+                 n_hidden=list([64, 32, 16]),
                  enc_act_func='relu',
                  dec_act_func='linear',
                  loss_func='mean_squared_error',

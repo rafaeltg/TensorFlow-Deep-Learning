@@ -83,14 +83,18 @@ class MLP(SupervisedModel):
         
         # Hidden layers
         for l in self.layers:
-            self._model_layers = Dense(output_dim=l,
-                                       init='uniform',
-                                       activation=self.enc_act_func)(self._model_layers)
 
             if self.dropout < 1:
                 self._model_layers = Dropout(p=self.dropout)(self._model_layers)
 
+            self._model_layers = Dense(output_dim=l,
+                                       init='uniform',
+                                       activation=self.enc_act_func)(self._model_layers)
+
         # Output layer
+        if self.dropout < 1:
+            self._model_layers = Dropout(p=self.dropout)(self._model_layers)
+
         self._model_layers = Dense(output_dim=n_output,
                                    init='uniform',
                                    activation=self.dec_act_func)(self._model_layers)

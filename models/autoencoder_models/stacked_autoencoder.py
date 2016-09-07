@@ -16,7 +16,7 @@ class StackedAutoencoder(SupervisedModel):
     def __init__(self,
                  model_name='sae',
                  main_dir='sae/',
-                 layers=list([128, 64]),
+                 layers=list([128, 64, 32]),
                  enc_act_func=list(['relu']),
                  dec_act_func=list(['linear']),
                  loss_func=list(['mean_squared_error']),
@@ -140,21 +140,24 @@ class StackedAutoencoder(SupervisedModel):
         """
 
         # Hidden layers
-        for l in self.ae_args['layers']:
-
-            # Get autoencoder parameters.
-            # params[0] = weights
-            # params[1] = biases
-            params = self.autoencoders[n].get_model_parameters()['enc']
-            
-            self._model_layers = Dense(output_dim=l,
-                                       weights=params,
-                                       activation=self.enc_act_func)(self._model_layers)
+        for n, l in enumerate(self.ae_args['layers']):
 
             if self.dropout < 1:
                 self._model_layers = Dropout(p=self.dropout)(self._model_layers)
 
-       # Output layer
+            # Get autoencoder parameters
+            # params[0] = weights
+            # params[1] = biases
+            params = self.autoencoders[n].get_model_parameters()['enc']
+
+            self._model_layers = Dense(output_dim=l,
+                                       weights=params,
+                                       activation=self.enc_act_func)(self._model_layers)
+
+        # Output layer
+        if self.dropout < 1:
+            self._model_layers = Dropout(p=self.dropout)(self._model_layers)
+
         self._model_layers = Dense(output_dim=n_output,
                                    init='uniform',
                                    activation=self.dec_act_func)(self._model_layers)

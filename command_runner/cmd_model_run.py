@@ -83,5 +83,8 @@ def run_unsupervised_model(model, global_params):
         test_cost = model.evaluate(data=test_x)
         print('\nTest Cost = {}'.format(test_cost))
 
+        print(test_x[0])
+        print(model.reconstruct(model.transform(test_x))[0])
+
         if global_params['save_encode_test']:
             np.save(global_params['save_encode_test'], model.transform(test_x))
