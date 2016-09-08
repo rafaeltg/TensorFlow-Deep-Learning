@@ -20,26 +20,26 @@ class Autoencoder(UnsupervisedModel):
                  n_hidden=32,
                  enc_act_func='relu',
                  dec_act_func='linear',
-                 loss_func='mean_squared_error',
+                 loss_func='mse',
                  num_epochs=10,
                  batch_size=100,
                  opt='rmsprop',
                  learning_rate=0.01,
                  momentum=0.5,
                  verbose=0,
-                 seed=-1):
+                 seed=42):
 
         """
         :param n_hidden: number of hidden units
-        :param enc_act_func: Activation function for the encoder. ['tanh', 'sigmoid', 'relu', 'linear']
-        :param dec_act_func: Activation function for the decoder. ['tanh', 'sigmoid', 'relu', 'linear']
-        :param loss_func: Cost function. ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy']
-        :param num_epochs: Number of epochs for training
-        :param batch_size: Size of each mini-batch
-        :param opt: Which tensorflow optimizer to use. ['sgd', 'momentum', 'ada_grad', 'adam', 'rms_prop']
-        :param learning_rate: Initial learning rate
-        :param momentum: Momentum parameter
-        :param verbose: Level of verbosity. 0 - silent, 1 - print accuracy.
+        :param enc_act_func: Activation function for the encoder.
+        :param dec_act_func: Activation function for the decoder.
+        :param loss_func: Loss function.
+        :param num_epochs: Number of epochs for training.
+        :param batch_size: Size of each mini-batch.
+        :param opt: Which optimizer to use.
+        :param learning_rate: Initial learning rate.
+        :param momentum: Momentum parameter.
+        :param verbose: Level of verbosity. 0 - silent, 1 - print
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
@@ -70,6 +70,7 @@ class Autoencoder(UnsupervisedModel):
     def _create_layers(self, n_inputs):
 
         """ Create the encoding and the decoding layers of the autoencoder.
+        :param n_inputs: Input size
         :return: self
         """
 
@@ -83,20 +84,19 @@ class Autoencoder(UnsupervisedModel):
 
     def _create_encoder_model(self):
 
-        """ Create the encoding layer of the autoencoder.
+        """ Create the model that maps an input to its encoded representation.
         :return: self
         """
 
         self.logger.info('Creating {} encoder model'.format(self.model_name))
 
-        # This model maps an input to its encoded representation
         self._encoder = kmodels.Model(input=self._input, output=self._encode_layer)
 
         self.logger.info('Done creating {} encoder model'.format(self.model_name))
 
     def _create_decoder_model(self):
 
-        """ Create the decoding layers of the autoencoder.
+        """ Create the model that maps an encoded input to the original values
         :return: self
         """
 
@@ -107,7 +107,6 @@ class Autoencoder(UnsupervisedModel):
         # retrieve the last layer of the autoencoder model
         decoder_layer = self._model.layers[-1]
 
-        # create the decoder model
         self._decoder = kmodels.Model(input=self._encoded_input, output=decoder_layer(self._encoded_input))
 
         self.logger.info('Done creating {} decoding layer'.format(self.model_name))

@@ -18,7 +18,7 @@ class Model:
     def __init__(self,
                  model_name,
                  main_dir,
-                 loss_func='mean_squared_error',
+                 loss_func='mse',
                  num_epochs=10,
                  batch_size=100,
                  opt='adam',

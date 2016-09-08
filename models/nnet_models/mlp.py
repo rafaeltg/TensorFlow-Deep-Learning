@@ -19,30 +19,30 @@ class MLP(SupervisedModel):
                  layers=list([128, 64, 32]),
                  enc_act_func='relu',
                  dec_act_func='linear',
-                 loss_func='mean_squared_error',
+                 loss_func='mse',
                  num_epochs=10,
                  batch_size=100,
                  opt='adam',
-                 learning_rate=0.01,
+                 learning_rate=0.001,
                  momentum=0.5,
                  dropout=0.4,
                  verbose=0,
-                 seed=-1):
+                 seed=42):
 
         """
         :param model_name: Name of the model.
         :param main_dir: Directory to save the model data.
         :param layers: Number of hidden units in each layer.
-        :param enc_act_func: Activation function for the hidden layers. ['tanh', 'sigmoid', 'relu', 'linear']
-        :param dec_act_func: Activation function for the output layer. ['tanh', 'sigmoid', 'relu', 'linear']
-        :param loss_func: Cost function. ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy']
+        :param enc_act_func: Activation function for the hidden layers.
+        :param dec_act_func: Activation function for the output layer.
+        :param loss_func: Cost function.
         :param num_epochs: Number of training epochs.
         :param batch_size: Size of each training mini-batch.
-        :param opt: Optimizer function. ['gradient_descent', 'momentum', 'ada_grad', 'adam', 'rms_prop']
+        :param opt: Optimizer function.
         :param learning_rate: Initial learning rate.
         :param momentum: Initial momentum value.
         :param dropout: The probability that each element is kept at each layer. Default = 1.0 (keep all).
-        :param verbose: Level of verbosity. 0 - silent, 1 - print everything.
+        :param verbose: Level of verbosity. 0 - silent, 1 - print.
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
@@ -88,7 +88,7 @@ class MLP(SupervisedModel):
                 self._model_layers = Dropout(p=self.dropout)(self._model_layers)
 
             self._model_layers = Dense(output_dim=l,
-                                       init='uniform',
+                                       init='glorot_uniform',
                                        activation=self.enc_act_func)(self._model_layers)
 
         # Output layer
@@ -96,7 +96,7 @@ class MLP(SupervisedModel):
             self._model_layers = Dropout(p=self.dropout)(self._model_layers)
 
         self._model_layers = Dense(output_dim=n_output,
-                                   init='uniform',
+                                   init='glorot_uniform',
                                    activation=self.dec_act_func)(self._model_layers)
 
     def get_model_parameters(self):

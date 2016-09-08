@@ -3,9 +3,18 @@ import os
 import numpy as np
 
 
-valid_act_functions          = ['sigmoid', 'tanh', 'relu', 'linear']
-valid_loss_functions         = ['mean_squared_error', 'cross_entropy', 'softmax_cross_entropy', 'custom']
-valid_optimization_functions = ['sgd', 'rmsprop', 'ada_grad', 'ada_delta', 'adam']
+valid_act_functions = ['softmax', 'softplus', 'sigmoid', 'tanh', 'relu', 'linear']
+
+valid_loss_functions = ['mse',                       # Mean Squared Error
+                        'mae',                       # Mean Absolute Error
+                        'mape',                      # Mean Absolute Percentage Error
+                        'msle',                      # Mean Squared Logarithmic Error
+                        'binary_crossentropy',       # Log loss
+                        'categorical_crossentropy',  # Multiclass Log loss
+                        'kld',                       # Kullback Leibler Divergence (information gain)
+                        'custom']
+
+valid_optimization_functions = ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam']
 
 
 # ################ #

@@ -67,8 +67,7 @@ def set_supervised_model_flags(model_name, flags):
         utils.valid_act_functions))
     flags.DEFINE_string('dec_act_func', 'relu', 'Activation function for the output layer. {}'.format(
         utils.valid_act_functions))
-    flags.DEFINE_string('loss_func', 'mean_squared_error', 'Cost function. {}'.format(
-        utils.valid_loss_functions))
+    flags.DEFINE_string('loss_func', 'mse', 'Loss function. {}'.format(utils.valid_loss_functions))
     flags.DEFINE_float('dropout', 0.4, 'Hidden layers dropout.')
 
 
@@ -105,4 +104,4 @@ def set_unsupervised_model_flags(model_name, flags):
         utils.valid_act_functions))
     flags.DEFINE_string('dec_act_func', 'relu', 'Activation function for the decode layer. {}'.format(
         utils.valid_act_functions))
-    flags.DEFINE_string('loss_func', 'mean_squared_error', 'Cost function. {}'.format(utils.valid_loss_functions))
+    flags.DEFINE_string('loss_func', 'mse', 'Loss function. {}'.format(utils.valid_loss_functions))

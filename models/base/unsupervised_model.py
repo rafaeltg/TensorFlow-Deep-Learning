@@ -16,11 +16,11 @@ class UnsupervisedModel(Model):
     def __init__(self,
                  model_name,
                  main_dir,
-                 loss_func='mean_squared_error',
+                 loss_func='mse',
                  num_epochs=10,
                  batch_size=100,
                  opt='adam',
-                 learning_rate=0.01,
+                 learning_rate=0.001,
                  momentum=0.5,
                  seed=-1,
                  verbose=0):
@@ -49,7 +49,7 @@ class UnsupervisedModel(Model):
         :return: self
         """
 
-        self.logger.info('Building {} model - n_input = {}'.format(self.model_name, n_input))
+        self.logger.info('Building {} model'.format(self.model_name))
 
         self._input = Input(shape=(n_input,), name='x-input')
 

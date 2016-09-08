@@ -19,44 +19,45 @@ class StackedAutoencoder(SupervisedModel):
                  layers=list([128, 64, 32]),
                  enc_act_func=list(['relu']),
                  dec_act_func=list(['linear']),
-                 loss_func=list(['mean_squared_error']),
+                 loss_func=list(['mse']),
                  num_epochs=list([10]),
-                 batch_size=list([10]),
+                 batch_size=list([100]),
                  opt=list(['adam']),
-                 learning_rate=list([0.01]),
+                 learning_rate=list([0.001]),
                  momentum=list([0.5]),
                  hidden_dropout=1.0,
-                 finetune_loss_func='mean_squared_error',
-                 finetune_enc_act_func='relu',
+                 finetune_loss_func='mse',
+                 finetune_enc_act_func='linear',
                  finetune_dec_act_func='linear',
                  finetune_opt='adam',
                  finetune_learning_rate=0.001,
                  finetune_momentum=0.5,
                  finetune_num_epochs=10,
                  finetune_batch_size=100,
-                 seed=-1,
+                 seed=42,
                  verbose=0):
 
         """
-        :param layers: list containing the hidden units for each layer
-        :param enc_act_func: Activation function for the encoder. ['sigmoid', 'tanh', 'relu', 'linear']
-        :param dec_act_func: Activation function for the decoder. ['sigmoid', 'tanh', 'relu', 'linear']
-        :param loss_func: Loss function. ['cross_entropy', 'mean_squared_error', 'softmax_cross_entropy', 'sparse'].
-        :param num_epochs: Number of epochs for training.
-        :param batch_size: Size of each mini-batch.
-        :param opt: Optimizer to use. string, default 'gradient_descent'. ['gradient_descent', 'ada_grad', 'momentum', 'rms_prop']
-        :param learning_rate: Initial learning rate.
-        :param momentum: 'Momentum parameter.
-        :param hidden_dropout: hidden layers dropout parameter.
-        :param finetune_loss_func: cost function for the fine tunning step. ['cross_entropy', 'mean_squared_error', 'softmax_cross_entropy', 'sparse']
-        :param finetune_enc_act_func: finetuning step hidden layers activation function. ['sigmoid', 'tanh', 'relu', 'linear']
-        :param finetune_dec_act_func: finetuning step output layer activation function. ['sigmoid', 'tanh', 'relu', 'linear']
-        :param finetune_opt: optimizer for the finetuning phase
-        :param finetune_learning_rate: learning rate for the finetuning.
-        :param finetune_momentum: momentum for the finetuning.
+        :param layers: List containing the hidden units for each layer.
+        :param enc_act_func: Activation function of each autoencoder.
+        :param dec_act_func: Activation function of each autoencoder.
+        :param loss_func: Loss function of each autoencoder.
+        :param num_epochs: Number of epochs for training of each autoencoder.
+        :param batch_size: Size of mini-batch of each autoencoder.
+        :param opt: Optimization function of each autoencoder.
+        :param learning_rate: Initial learning rate of each autoencoder.
+        :param momentum: Momentum parameter of each autoencoder.
+        :param hidden_dropout: Hidden layers dropout parameter for the finetuning step.
+        :param finetune_loss_func: loss function for the finetuning step.
+        :param finetune_enc_act_func: Finetuning step  hidden layers activation function.
+        :param finetune_dec_act_func: Finetuning step output layer activation function.
+        :param finetune_opt: Optimization function for the finetuning step.
+        :param finetune_learning_rate: Learning rate for the finetuning.
+        :param finetune_momentum: Momentum for the finetuning.
         :param finetune_num_epochs: Number of epochs for the finetuning.
         :param finetune_batch_size: Size of each mini-batch for the finetuning.
         :param seed: positive integer for seeding random generators. Ignored if < 0.
+        :param verbose:
         """
 
         super().__init__(model_name=model_name,
@@ -133,7 +134,7 @@ class StackedAutoencoder(SupervisedModel):
 
     def _create_layers(self, n_input, n_output):
 
-        """ Create the finetuning network layers
+        """ Create the finetuning model
         :param n_input:
         :param n_output:
         :return: self
@@ -159,7 +160,7 @@ class StackedAutoencoder(SupervisedModel):
             self._model_layers = Dropout(p=self.dropout)(self._model_layers)
 
         self._model_layers = Dense(output_dim=n_output,
-                                   init='uniform',
+                                   init='glorot_normal',
                                    activation=self.dec_act_func)(self._model_layers)
 
     def _pretrain(self, x_train, x_valid):
