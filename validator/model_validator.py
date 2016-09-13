@@ -52,13 +52,13 @@ class ModelValidator(object):
         scores = []
         cv_metrics = None
 
-        if len(metrics):
+        if len(metrics) > 0:
             cv_metrics = {}
             for k in metrics:
                 cv_metrics[k] = []
 
         for i, (train_idxs, test_idxs) in enumerate(folds):
-            print('CV - {}'.format(i))
+            print('CV - {}/{}'.format(i, len(folds)))
 
             x_train, y_train = x[train_idxs], y[train_idxs]
             x_test, y_test = x[test_idxs], y[test_idxs]
@@ -67,13 +67,15 @@ class ModelValidator(object):
 
             s = model.score(x_test, y_test)
             scores.append(s)
-            print('Test score %f' % s)
+            print('> Test score = %f' % s)
 
             if cv_metrics:
                 preds = model.predict(x_test)
 
                 for m in metrics:
-                    cv_metrics[m] = cv_metrics[m].append(available_metrics[m](y_test, preds))
+                    v = available_metrics[m](y_test, preds)
+                    print('> %s = %f' % (m, v))
+                    cv_metrics[m] = cv_metrics[m].append(v)
 
         return {
             'scores': scores,
