@@ -13,7 +13,7 @@ FLAGS = flags.FLAGS
 
 set_supervised_model_flags('lstm', flags)
 flags.DEFINE_string('cell_type', 'simple', 'Recurrent layers type. ["lstm", "gru", "simple"]')
-flags.DEFINE_string('layers', '64,64', 'String representing the architecture of the network.')
+flags.DEFINE_string('layers', '50,50', 'String representing the architecture of the network.')
 flags.DEFINE_boolean('stateful', True, 'Whether the recurrent network is stateful or not.')
 
 

@@ -52,7 +52,7 @@ def run_supervised_model(model, global_params):
             np.save(global_params['save_predictions'], preds)
 
 
-def plot_predictions(y, y_pred, p=0.1):
+def plot_predictions(y, y_pred, p=1):
 
     ax = plt.subplot(111)
     ax.plot(y[1:int((len(y)*p))], label='Actual')

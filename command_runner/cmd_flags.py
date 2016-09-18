@@ -16,7 +16,7 @@ def model_flags(model_name, flags):
     flags.DEFINE_string('model_name', model_name, 'Model name.')
     flags.DEFINE_string('main_dir', model_name+'/', 'Directory to store data relative to the algorithm.')
 
-    flags.DEFINE_integer('num_epochs', 20, 'Number of training epochs.')
+    flags.DEFINE_integer('num_epochs', 200, 'Number of training epochs.')
     flags.DEFINE_integer('batch_size', 1, 'Size of each training mini-batch.')
     flags.DEFINE_string('opt', 'adam', 'Optimization algorithm. {}'.format(utils.valid_optimization_functions))
     flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
@@ -68,7 +68,7 @@ def set_supervised_model_flags(model_name, flags):
     flags.DEFINE_string('dec_act_func', 'linear', 'Activation function for the output layer. {}'.format(
         utils.valid_act_functions))
     flags.DEFINE_string('loss_func', 'mse', 'Loss function. {}'.format(utils.valid_loss_functions))
-    flags.DEFINE_float('dropout', 0.2, 'Hidden layers dropout.')
+    flags.DEFINE_float('dropout', 0.15, 'Hidden layers dropout.')
 
 
 ##############################
