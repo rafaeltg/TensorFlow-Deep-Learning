@@ -96,33 +96,19 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def _create_autoencoders(self):
+    def _get_autoencoder(self, n):
 
-        """  Create Denoising Autoencoder Objects
-        :return: self
-        """
-
-        self.logger.info('Creating {} pretrain nodes...'.format(self.model_name))
-
-        self.autoencoders = []
-
-        for l, layer in enumerate(self.ae_args['layers']):
-
-            self.logger.info('Node {} - size = {}'.format(l, layer))
-
-            self.autoencoders.append(DenoisingAutoencoder(model_name='{}_dae_{}'.format(self.model_name, l),
-                                                          main_dir=self.main_dir,
-                                                          n_hidden=layer,
-                                                          enc_act_func=self.ae_args['enc_act_func'][l],
-                                                          dec_act_func=self.ae_args['dec_act_func'][l],
-                                                          loss_func=self.ae_args['loss_func'][l],
-                                                          num_epochs=self.ae_args['num_epochs'][l],
-                                                          batch_size=self.ae_args['batch_size'][l],
-                                                          opt=self.ae_args['opt'][l],
-                                                          learning_rate=self.ae_args['learning_rate'][l],
-                                                          momentum=self.ae_args['momentum'][l],
-                                                          corr_type=self.ae_args['corr_type'][l],
-                                                          corr_param=self.ae_args['corr_param'][l],
-                                                          verbose=self.verbose))
-
-        self.logger.info('Done creating {} pretrain nodes...'.format(self.model_name))
+        return DenoisingAutoencoder(model_name='{}_dae_{}'.format(self.model_name, n),
+                                    main_dir=self.main_dir,
+                                    n_hidden=self.ae_args['layers'][n],
+                                    enc_act_func=self.ae_args['enc_act_func'][n],
+                                    dec_act_func=self.ae_args['dec_act_func'][n],
+                                    loss_func=self.ae_args['loss_func'][n],
+                                    num_epochs=self.ae_args['num_epochs'][n],
+                                    batch_size=self.ae_args['batch_size'][n],
+                                    opt=self.ae_args['opt'][n],
+                                    learning_rate=self.ae_args['learning_rate'][n],
+                                    momentum=self.ae_args['momentum'][n],
+                                    corr_type=self.ae_args['corr_type'][n],
+                                    corr_param=self.ae_args['corr_param'][n],
+                                    verbose=self.verbose)

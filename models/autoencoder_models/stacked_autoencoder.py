@@ -95,46 +95,18 @@ class StackedAutoencoder(SupervisedModel):
 
         self.ae_args = utils.expand_args(ae_args)
 
-        # Autoencoders list
-        self.autoencoders = []
-
         # Finetuning parameters
+        self.pretrain_params = []
         self.enc_act_func = finetune_enc_act_func
         self.dec_act_func = finetune_dec_act_func
         self.dropout = hidden_dropout
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def _create_autoencoders(self):
-
-        """ Create Autoencoder Objects used for unsupervised pretraining
-        :return: self
-        """
-
-        self.logger.info('Creating {} pretrain nodes...'.format(self.model_name))
-
-        for l, layer in enumerate(self.ae_args['layers']):
-
-            self.logger.info('l = {}, layer = {}'.format(l, layer))
-
-            self.autoencoders.append(Autoencoder(model_name='{}_ae_{}'.format(self.model_name, l),
-                                                 main_dir=self.main_dir,
-                                                 n_hidden=layer,
-                                                 enc_act_func=self.ae_args['enc_act_func'][l],
-                                                 dec_act_func=self.ae_args['dec_act_func'][l],
-                                                 loss_func=self.ae_args['loss_func'][l],
-                                                 num_epochs=self.ae_args['num_epochs'][l],
-                                                 batch_size=self.ae_args['batch_size'][l],
-                                                 opt=self.ae_args['opt'][l],
-                                                 learning_rate=self.ae_args['learning_rate'][l],
-                                                 momentum=self.ae_args['momentum'][l],
-                                                 verbose=self.verbose))
-
-        self.logger.info('Done creating {} pretrain nodes...'.format(self.model_name))
-
-    def _create_layers(self, n_output):
+    def _create_layers(self, input_shape, n_output):
 
         """ Create the finetuning model
+        :param input_shape:
         :param n_output:
         :return: self
         """
@@ -142,25 +114,17 @@ class StackedAutoencoder(SupervisedModel):
         # Hidden layers
         for n, l in enumerate(self.ae_args['layers']):
 
-            if self.dropout < 1:
-                self._model_layers = Dropout(p=self.dropout)(self._model_layers)
+            self._model.add(Dropout(p=self.dropout,
+                                    input_shape=[input_shape[1] if n == 0 else None]))
 
-            # Get autoencoder parameters
-            # params[0] = weights
-            # params[1] = biases
-            params = self.autoencoders[n].get_model_parameters()['enc']
-
-            self._model_layers = Dense(output_dim=l,
-                                       weights=params,
-                                       activation=self.enc_act_func)(self._model_layers)
+            self._model.add(Dense(output_dim=l,
+                                  weights=self.pretrain_params[n],
+                                  activation=self.enc_act_func))
 
         # Output layer
-        if self.dropout < 1:
-            self._model_layers = Dropout(p=self.dropout)(self._model_layers)
-
-        self._model_layers = Dense(output_dim=n_output,
-                                   init='glorot_normal',
-                                   activation=self.dec_act_func)(self._model_layers)
+        self._model.add(Dropout(p=self.dropout))
+        self._model.add(Dense(output_dim=n_output,
+                              activation=self.dec_act_func))
 
     def _pretrain(self, x_train, x_valid=None):
 
@@ -172,25 +136,45 @@ class StackedAutoencoder(SupervisedModel):
 
         self.logger.info('Starting {} unsupervised pretraining...'.format(self.model_name))
 
-        self._create_autoencoders()
-
         next_train = x_train
         next_valid = x_valid
 
-        for l, autoenc in enumerate(self.autoencoders):
+        for l in range(len(self.ae_args['layers'])):
 
-            self.logger.info('Pre-training layer {}'.format(l+1))
+            self.logger.info('Pre-training layer {}'.format(l))
+
+            ae = self._get_autoencoder(l)
 
             # Pretrain a single autoencoder
-            autoenc.fit(next_train, next_valid)
+            ae.fit(next_train, next_valid)
 
-            # Encode the data for the next layer.
-            next_train = autoenc.transform(data=next_train)
+            # Get autoencoder parameters
+            # params[0] = weights
+            # params[1] = biases
+            self.pretrain_params.append(ae.get_model_parameters()['enc'])
+
+            # Encode the data for the next layer
+            next_train = ae.transform(data=next_train)
 
             if x_valid:
-                next_valid = autoenc.transform(data=next_valid)
+                next_valid = ae.transform(data=next_valid)
 
         self.logger.info('Done {} unsupervised pretraining...'.format(self.model_name))
+
+    def _get_autoencoder(self, n):
+
+        return Autoencoder(model_name='{}_ae_{}'.format(self.model_name, n),
+                           main_dir=self.main_dir,
+                           n_hidden=self.ae_args['layers'][n],
+                           enc_act_func=self.ae_args['enc_act_func'][n],
+                           dec_act_func=self.ae_args['dec_act_func'][n],
+                           loss_func=self.ae_args['loss_func'][n],
+                           num_epochs=self.ae_args['num_epochs'][n],
+                           batch_size=self.ae_args['batch_size'][n],
+                           opt=self.ae_args['opt'][n],
+                           learning_rate=self.ae_args['learning_rate'][n],
+                           momentum=self.ae_args['momentum'][n],
+                           verbose=self.verbose)
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):
 

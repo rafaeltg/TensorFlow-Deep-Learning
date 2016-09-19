@@ -54,7 +54,6 @@ class Model:
         self.main_dir = main_dir
 
         self._model = None
-        self._input = None # Model input data
         self.loss_func = loss_func
 
         # Training parameters

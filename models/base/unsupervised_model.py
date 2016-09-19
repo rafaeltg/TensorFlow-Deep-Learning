@@ -36,6 +36,9 @@ class UnsupervisedModel(Model):
                          seed=seed,
                          verbose=verbose)
 
+        # Model input data
+        self._input = None
+
         self._encode_layer = None
         self._decode_layer = None
 

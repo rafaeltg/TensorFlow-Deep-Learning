@@ -118,8 +118,8 @@ class Autoencoder(UnsupervisedModel):
         """
 
         params = {
-            'enc': self._encoder.get_weights(),
-            'dec': self._decoder.get_weights()
+            'enc': self._encoder.get_weights()
+            #'dec': self._decoder.get_weights()
         }
 
         return params

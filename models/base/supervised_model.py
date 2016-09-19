@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.layers import Input
-import keras.models as kmodels
+from keras.models import Sequential
+
 from models.base.model import Model
 
 
@@ -11,31 +11,6 @@ class SupervisedModel(Model):
 
     """ Class representing an abstract Supervised Model.
     """
-
-    def __init__(self,
-                 model_name,
-                 main_dir,
-                 loss_func='mse',
-                 num_epochs=100,
-                 batch_size=100,
-                 opt='adam',
-                 learning_rate=0.001,
-                 momentum=0.5,
-                 seed=42,
-                 verbose=0):
-
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
-                         loss_func=loss_func,
-                         num_epochs=num_epochs,
-                         batch_size=batch_size,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         momentum=momentum,
-                         seed=seed,
-                         verbose=verbose)
-
-        self._model_layers = None
 
     def build_model(self, input_shape, n_output=1):
 
@@ -47,18 +22,15 @@ class SupervisedModel(Model):
 
         self.logger.info('Building {} model'.format(self.model_name))
 
-        self._input = Input(shape=input_shape[1:], name='x-input')
-        self._model_layers = self._input
+        self._model = Sequential()
 
-        self._create_layers(n_output)
-        
-        self._model = kmodels.Model(input=self._input, output=self._model_layers)
+        self._create_layers(input_shape, n_output)
 
         self._model.compile(optimizer=self.opt, loss=self.loss_func)
 
         self.logger.info('Done building {} model'.format(self.model_name))
 
-    def _create_layers(self, n_output):
+    def _create_layers(self, input_shape, n_output):
         pass
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):

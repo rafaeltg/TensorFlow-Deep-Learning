@@ -3,9 +3,8 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-from keras.layers import Dense, Dropout, LSTM, GRU, SimpleRNN, Input
-import keras.backend as K
 import utils.utilities as utils
+from keras.layers import Dense, Dropout, LSTM, GRU, SimpleRNN
 from models.base.supervised_model import SupervisedModel
 
 
@@ -89,34 +88,31 @@ class RNN(SupervisedModel):
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def _create_layers(self, n_output):
+    def _create_layers(self, input_shape, n_output):
 
         """ Create the network layers
         :param n_output:
         :return: self
         """
 
-        if self.stateful:
-            self._input = Input(batch_shape=(self.batch_size, 1, K.int_shape(self._input)[2]))
-            self._model_layers = self._input
+        b_size = self.batch_size if self.stateful else None
 
         # Hidden layers
-        for n, l in enumerate(self.layers):
+        for i, l in enumerate(self.layers):
 
-            if self.dropout < 1:
-                self._model_layers = Dropout(p=self.dropout)(self._model_layers)
+            self._model.add(Dropout(p=self.dropout,
+                                    batch_input_shape=(b_size, input_shape[1], input_shape[2]) if i == 0 else [None]))
 
-            self._model_layers = self.cell(output_dim=l,
-                                           activation=self.enc_act_func,
-                                           stateful=self.stateful,
-                                           return_sequences=True if n < (len(self.layers)-1) else False)(self._model_layers)
+            self._model.add(self.cell(output_dim=l,
+                                      batch_input_shape=(b_size, input_shape[1], input_shape[2]),
+                                      activation=self.enc_act_func,
+                                      stateful=self.stateful,
+                                      return_sequences=True if i < (len(self.layers)-1) else False))
 
         # Output layer
-        if self.dropout < 1:
-            self._model_layers = Dropout(p=self.dropout)(self._model_layers)
-
-        self._model_layers = Dense(output_dim=n_output,
-                                   activation=self.dec_act_func)(self._model_layers)
+        self._model.add(Dropout(p=self.dropout))
+        self._model.add(Dense(output_dim=n_output,
+                              activation=self.dec_act_func))
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):
 

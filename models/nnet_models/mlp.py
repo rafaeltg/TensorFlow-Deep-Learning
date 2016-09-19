@@ -73,27 +73,18 @@ class MLP(SupervisedModel):
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def _create_layers(self, n_output):
+    def _create_layers(self, input_shape, n_output):
 
         """ Create the network layers
+        :param input_shape:
         :param n_output:
         :return: self
         """
-        
-        # Hidden layers
-        for l in self.layers:
 
-            if self.dropout < 1:
-                self._model_layers = Dropout(p=self.dropout)(self._model_layers)
+        for i, l in enumerate(self.layers + [n_output]):
 
-            self._model_layers = Dense(output_dim=l,
-                                       activation=self.enc_act_func)(self._model_layers)
+            self._model.add(Dropout(p=self.dropout,
+                                    input_shape=[input_shape[1] if i == 0 else None]))
 
-        # Output layer
-        if self.dropout < 1:
-            self._model_layers = Dropout(p=self.dropout)(self._model_layers)
-
-        self._model_layers = Dense(output_dim=n_output,
-                                   activation=self.dec_act_func)(self._model_layers)
-
-
+            self._model.add(Dense(output_dim=l,
+                                  activation=self.enc_act_func if i < len(self.layers) else self.dec_act_func))
