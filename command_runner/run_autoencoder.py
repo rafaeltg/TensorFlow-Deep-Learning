@@ -2,7 +2,7 @@ import tensorflow as tf
 
 from command_runner.cmd_flags import set_unsupervised_model_flags
 from command_runner.cmd_model_run import run_unsupervised_model
-from models.autoencoder_models.autoencoder import Autoencoder
+from pydl.models.autoencoder_models.autoencoder import Autoencoder
 
 # #################### #
 #   Flags definition   #

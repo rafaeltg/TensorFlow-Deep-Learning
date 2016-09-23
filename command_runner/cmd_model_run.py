@@ -1,8 +1,9 @@
-import numpy as np
 import matplotlib.pyplot as plt
-from models.base.supervised_model import SupervisedModel
-from models.base.unsupervised_model import UnsupervisedModel
-from utils import datasets
+import numpy as np
+
+from pydl.models.base.supervised_model import SupervisedModel
+from pydl.models.base.unsupervised_model import UnsupervisedModel
+from pydl.utils import datasets
 
 
 #########################

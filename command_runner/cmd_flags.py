@@ -1,4 +1,4 @@
-import utils.utilities as utils
+import pydl.utils.utilities as utils
 
 #################
 #  Model Flags  #
@@ -18,7 +18,7 @@ def model_flags(model_name, flags):
 
     flags.DEFINE_integer('num_epochs', 200, 'Number of training epochs.')
     flags.DEFINE_integer('batch_size', 1, 'Size of each training mini-batch.')
-    flags.DEFINE_string('opt', 'adam', 'Optimization algorithm. {}'.format(utils.valid_optimization_functions))
+    flags.DEFINE_string('opt', 'rmsprop', 'Optimization algorithm. {}'.format(utils.valid_optimization_functions))
     flags.DEFINE_float('learning_rate', 0.001, 'Initial learning rate.')
     flags.DEFINE_float('momentum', 0.5, 'Momentum parameter.')
 

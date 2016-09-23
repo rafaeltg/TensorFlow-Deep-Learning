@@ -2,9 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import utils.utilities as utils
-from models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder
-from models.autoencoder_models.stacked_autoencoder import StackedAutoencoder
+import pydl.utils.utilities as utils
+from pydl.models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder
+from pydl.models.autoencoder_models.stacked_autoencoder import StackedAutoencoder
 
 
 class StackedDenoisingAutoencoder(StackedAutoencoder):

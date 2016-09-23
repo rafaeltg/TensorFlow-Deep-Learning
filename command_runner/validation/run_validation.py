@@ -1,10 +1,9 @@
-import tensorflow as tf
 import numpy as np
-import models.autoencoder_models as ae_models
-from models.nnet_models.mlp import MLP
-from models.nnet_models.rnn import RNN
-from utils import datasets
-from utils.utilities import flag_to_list
+import tensorflow as tf
+
+from pydl.utils.utilities import flag_to_list
+from pydl.models.nnet_models.mlp import MLP
+from pydl.utils import datasets
 from validator.model_validator import ModelValidator
 
 # #################### #

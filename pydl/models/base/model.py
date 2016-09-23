@@ -6,8 +6,8 @@ import keras.optimizers as KOpt
 import numpy as np
 import tensorflow as tf
 
-import utils.utilities as utils
-from utils.logger import Logger
+import pydl.utils.utilities as utils
+from pydl.utils.logger import Logger
 
 
 class Model:

@@ -2,7 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from models.base.supervised_model import SupervisedModel
+from pydl.models.base.supervised_model import SupervisedModel
+
 import validator.validation_method as valid
 from validator.validation_metrics import available_metrics
 

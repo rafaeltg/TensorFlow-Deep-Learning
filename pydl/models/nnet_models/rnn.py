@@ -3,9 +3,10 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import utils.utilities as utils
 from keras.layers import Dense, Dropout, LSTM, GRU, SimpleRNN
-from models.base.supervised_model import SupervisedModel
+
+import pydl.utils.utilities as utils
+from pydl.models.base.supervised_model import SupervisedModel
 
 
 class RNN(SupervisedModel):

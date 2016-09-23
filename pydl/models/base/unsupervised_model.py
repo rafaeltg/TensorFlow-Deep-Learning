@@ -2,10 +2,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.layers import Input
 import keras.models as kmodels
+from keras.layers import Input
 
-from models.base.model import Model
+from pydl.models.base.model import Model
 
 
 class UnsupervisedModel(Model):

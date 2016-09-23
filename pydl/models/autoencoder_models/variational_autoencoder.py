@@ -3,12 +3,12 @@ from __future__ import division
 from __future__ import print_function
 
 import keras.models as kmodels
-from keras.layers import Input, Dense, Lambda
 from keras import backend as K
 from keras import objectives
+from keras.layers import Input, Dense, Lambda
 
-import utils.utilities as utils
-from models.base.unsupervised_model import UnsupervisedModel
+import pydl.utils.utilities as utils
+from pydl.models.base.unsupervised_model import UnsupervisedModel
 
 
 class VariationalAutoencoder(UnsupervisedModel):

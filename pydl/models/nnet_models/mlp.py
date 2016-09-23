@@ -4,8 +4,8 @@ from __future__ import print_function
 
 from keras.layers import Dense, Dropout
 
-import utils.utilities as utils
-from models.base.supervised_model import SupervisedModel
+import pydl.utils.utilities as utils
+from pydl.models.base.supervised_model import SupervisedModel
 
 
 class MLP(SupervisedModel):

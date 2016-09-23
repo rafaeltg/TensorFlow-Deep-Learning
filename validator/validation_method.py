@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import sklearn.cross_validation as cv
 from math import floor
+import sklearn.cross_validation as cv
 
 
 class ValidateMethod(object):

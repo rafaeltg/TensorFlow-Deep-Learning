@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-import utils.utilities as utils
+import pydl.utils.utilities as utils
 from command_runner.cmd_flags import set_supervised_model_flags
 from command_runner.cmd_model_run import run_supervised_model
-from models.nnet_models.mlp import MLP
+from pydl.models.nnet_models.mlp import MLP
 
 # #################### #
 #   Flags definition   #
