@@ -14,4 +14,3 @@ Deep Learning algorithms implemented using Keras library and Python.
 
 ### General TODO list:
 * Improve docstrings
-* Optimize models parameters
