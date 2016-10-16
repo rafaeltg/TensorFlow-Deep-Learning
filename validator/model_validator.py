@@ -18,18 +18,18 @@ class ModelValidator(object):
         :param kwargs:
         """
 
-        assert method in ['kfold', 'skfold', 'loo', 'shuffle_split', 'split']
+        assert method in ['kfold', 'skfold', 'shuffle_split', 'split', 'time_series']
 
         if method == 'kfold':
-            self.method = valid.KFoldValidation(kwargs.get('k', 10))
+            self.method = valid.KFoldValidation(**kwargs)
         elif method == 'skfold':
-            self.method = valid.StratifiedKFoldValidation(kwargs.get('k'))
-        elif method == 'loo':
-            self.method = valid.LOOValidation()
+            self.method = valid.StratifiedKFoldValidation(**kwargs)
         elif method == 'shuffle_split':
-            self.method = valid.ShuffleSplitValidation(kwargs.get('test_size'), kwargs.get('n_iter'))
+            self.method = valid.ShuffleSplitValidation(**kwargs)
+        elif method == 'split':
+            self.method = valid.SplitValidation(**kwargs)
         else:
-            self.method = valid.SplitValidation(kwargs.get('test_size'))
+            self.method = valid.TimeSeriesValidation(**kwargs)
 
     def run(self, model, x=None, y=None, metrics=list([])):
 
@@ -55,8 +55,9 @@ class ModelValidator(object):
                 cv_metrics[m] = []
 
         i = 0
-        for train_idxs, test_idxs in self.method.get_cv_folds(y):
+        for train_idxs, test_idxs in self.method.get_cv_folds(x, y):
             print('\nCV - %d' % i)
+            print(len(test_idxs))
 
             x_train, y_train = x[train_idxs], y[train_idxs]
             x_test, y_test = x[test_idxs], y[test_idxs]

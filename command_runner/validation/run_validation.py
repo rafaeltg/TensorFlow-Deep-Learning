@@ -17,7 +17,8 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string('model', 'mlp', 'Model to validate (use default parameters).')
 flags.DEFINE_string('method', 'split', 'Validation method.')
-flags.DEFINE_integer('n_folds', 10, 'Number of cv folds.')
+flags.DEFINE_integer('n_splits', 3, 'Number of cv folds.')
+flags.DEFINE_boolean('shufle', False, 'Whether to shuffle the data before splitting into batches.')
 flags.DEFINE_float('test_size', 0.3, 'Percentage of data used for validation.')
 flags.DEFINE_string('dataset_x', '', 'Path to the dataset file (.npy or .csv).')
 flags.DEFINE_string('dataset_y', '', 'Path to the dataset outputs file (.npy or .csv).')
@@ -26,12 +27,13 @@ flags.DEFINE_string('metrics', 'mse,mae,rmse', '')
 model_name = FLAGS.model
 
 params = {
-  'method':    FLAGS.method,
-  'k':         FLAGS.n_folds,
-  'test_size': FLAGS.test_size,
-  'dataset_x': FLAGS.dataset_x,
-  'dataset_y': FLAGS.dataset_y,
-  'metrics':   flag_to_list(FLAGS.metrics, 'str'),
+    'method':    FLAGS.method,
+    'n_splits':  FLAGS.n_splits,
+    'shufle':    FLAGS.shufle,
+    'test_size': FLAGS.test_size,
+    'dataset_x': FLAGS.dataset_x,
+    'dataset_y': FLAGS.dataset_y,
+    'metrics':   flag_to_list(FLAGS.metrics, 'str'),
 }
 
 
@@ -40,9 +42,7 @@ def run_validation(model, **kwargs):
     dataset = datasets.load_dataset(kwargs.get('dataset_x'),
                                     kwargs.get('dataset_y'))
 
-    valid = ModelValidator(method=kwargs.get('method'),
-                           k=kwargs.get('k'),
-                           test_size=kwargs.get('test_size'))
+    valid = ModelValidator(**kwargs)
 
     res = valid.run(model=model,
                     x=dataset.data,
