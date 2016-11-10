@@ -1,3 +1,5 @@
+from pydl.models.autoencoder_models.stacked_autoencoder import StackedAutoencoder
+from pydl.models.autoencoder_models.stacked_denoising_autoencoder import StackedDenoisingAutoencoder
 from pydl.models.nnet_models.mlp import MLP
 from pydl.models.nnet_models.rnn import RNN
 
@@ -41,3 +43,9 @@ def get_model(config):
         return MLP(**p)
     elif m == 'rnn':
         return RNN(**p)
+    elif m == 'sae':
+        return StackedAutoencoder(**p)
+    elif m == 'sdae':
+        return StackedDenoisingAutoencoder(**p)
+    else:
+        raise Exception('Invalid model!')
