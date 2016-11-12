@@ -15,7 +15,6 @@ class MLP(SupervisedModel):
 
     def __init__(self,
                  model_name='mlp',
-                 main_dir='mlp/',
                  layers=list([128, 64, 32]),
                  enc_act_func='relu',
                  dec_act_func='linear',
@@ -33,7 +32,6 @@ class MLP(SupervisedModel):
 
         """
         :param model_name: Name of the model.
-        :param main_dir: Directory to save the model data.
         :param layers: Number of hidden units in each layer.
         :param enc_act_func: Activation function for the hidden layers.
         :param dec_act_func: Activation function for the output layer.
@@ -51,7 +49,6 @@ class MLP(SupervisedModel):
         """
 
         super().__init__(model_name=model_name,
-                         main_dir=main_dir,
                          loss_func=loss_func,
                          l1_reg=l1_reg,
                          l2_reg=l2_reg,

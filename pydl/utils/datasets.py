@@ -1,71 +1,50 @@
 import collections
-import csv
 import os
-
+import pandas
 import numpy as np
-from tensorflow.python.platform import gfile
 
-Dataset = collections.namedtuple('Dataset', ['data', 'target'])
+Dataset = collections.namedtuple('Dataset', ['x', 'y'])
 Datasets = collections.namedtuple('Datasets', ['train', 'test', 'validation'])
 
 
-def load_csv(filename, data_type=np.float64, has_header=True):
-    with gfile.Open(filename) as csv_file:
-        data_file = csv.reader(csv_file)
-
-        if has_header:
-            _ = next(data_file)
-
-        data = []
-        for ir in data_file:
-            data.append(np.asarray(ir, dtype=data_type))
-
-        data = np.asarray(data, dtype=data_type)
-
-    return data
+def load_csv(filename, dtype=np.float64, has_header=True):
+    return pandas.read_csv(filename, skiprows=1 if has_header else 0).values.astype(dtype)
 
 
 def load_npy(filename):
     return np.load(filename) if filename != '' else None
 
 
+def load_data_file(filename, dtype=np.float64, has_header=True):
+    if filename is '':
+        return None
+    elif os.path.splitext(filename)[1] == '.csv':
+        return load_csv(filename=filename, dtype=dtype, has_header=has_header)
+    else:
+        return load_npy(filename)
+
+
 def load_dataset(x_path, y_path='', y_dtype=np.float64, has_header=True):
 
-    if x_path == '':
-        return Dataset(data=None, target=None)
-
-    if os.path.splitext(x_path)[1] == '.csv':
-        x = load_csv(filename=x_path, has_header=has_header)
-
-    else:
-        x = load_npy(x_path)
-
-    if y_path is '':
-        y = None
-
-    elif os.path.splitext(y_path)[1] == '.csv':
-        y = load_csv(filename=y_path, data_type=y_dtype, has_header=has_header)
-
-    else:
-        y = load_npy(y_path)
-
-    return Dataset(data=x, target=y)
+    x = load_data_file(filename=x_path, has_header=has_header)
+    y = load_data_file(filename=y_path, dtype=y_dtype, has_header=has_header)
+    return Dataset(x=x, y=y)
 
 
-def load_datasets(train_dataset,
-                  train_labels='',
-                  test_dataset='',
-                  test_labels='',
-                  valid_dataset='',
-                  valid_labels='',
+def load_datasets(train_x,
+                  train_y='',
+                  test_x='',
+                  test_y='',
+                  valid_x='',
+                  valid_y='',
                   labels_dtype=np.float64,
                   has_header=True):
 
     """
     """
 
-    assert train_dataset != ''
+    assert train_x != ''
 
-    return Datasets(train=load_dataset(train_dataset, train_labels, labels_dtype, has_header),
-                    test=load_dataset(test_dataset, test_labels, labels_dtype, has_header),
-                    validation=load_dataset(valid_dataset, valid_labels, labels_dtype, has_header))
+    return Datasets(train=load_dataset(train_x, train_y, labels_dtype, has_header),
+                    test=load_dataset(test_x, test_y, labels_dtype, has_header),
+                    validation=load_dataset(valid_x, valid_y, labels_dtype, has_header))

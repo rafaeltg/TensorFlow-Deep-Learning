@@ -2,10 +2,14 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
+import inspect
+
 import keras.optimizers as KOpt
 import numpy as np
 import pydl.utils.utilities as utils
 import tensorflow as tf
+from keras.models import load_model, save_model
 from pydl.utils.logger import Logger
 
 
@@ -16,7 +20,6 @@ class Model:
 
     def __init__(self,
                  model_name,
-                 main_dir,
                  loss_func='mse',
                  l1_reg=0.0,
                  l2_reg=0.0,
@@ -30,7 +33,6 @@ class Model:
 
         """
         :param model_name: Name of the model, used as filename.
-        :param main_dir: Main directory to put the stored_models, data and summary directories.
         :param loss_func:
         :param l1_reg: L1 weight regularization penalty, also known as LASSO.
         :param l2_reg: L2 weight regularization penalty, also known as weight decay, or Ridge.
@@ -43,43 +45,59 @@ class Model:
         :param verbose: Level of verbosity. 0 - silent, 1 - print.
         """
 
-        # Validations
-        assert model_name is not ''
-        assert main_dir is not ''
-        assert num_epochs > 0
-        assert batch_size > 0
-        assert loss_func in utils.valid_loss_functions
-        assert l1_reg >= 0
-        assert l2_reg >= 0
-        assert opt in utils.valid_optimization_functions
-        assert learning_rate > 0
-        assert momentum > 0 if opt == 'sgd' else True
-
         self.model_name = model_name
-        self.main_dir = main_dir
-
-        self._model = None
-
-        # Loss function
         self.loss_func = loss_func
         self.l1_reg = l1_reg
         self.l2_reg = l2_reg
-
-        # Training parameters
         self.num_epochs = num_epochs
         self.batch_size = batch_size
+        self.opt_func = opt
+        self.learning_rate = learning_rate
+        self.momentum = momentum
+        self.verbose = verbose
 
-        # Optimization function
-        self.opt = self.get_optimizer(opt_func=opt, learning_rate=learning_rate, momentum=momentum)
+        self.validate_params()
+
+        self._model = None
 
         if seed >= 0:
             np.random.seed(seed)
             tf.set_random_seed(seed)
 
-        self.verbose = verbose
-
         # Create the logger
         self.logger = Logger(model_name, verbose)
+
+    def set_params(self, **params):
+        valid_params = self.get_func_params(self.__init__).keys()
+        for key, value in params.items():
+            if key in valid_params:
+                setattr(self, key, value)
+        self.validate_params()
+
+    def validate_params(self):
+        assert self.model_name is not '', 'Invalid model name'
+        assert self.num_epochs > 0, 'Invalid number of training epochs'
+        assert self.batch_size > 0, 'Invalid batch size'
+        assert self.loss_func in utils.valid_loss_functions, 'Invalid loss function'
+        assert self.l1_reg >= 0
+        assert self.l2_reg >= 0
+        assert self.opt_func in utils.valid_optimization_functions, 'Invalid optimizer'
+        assert self.learning_rate > 0, 'Invalid learning rate'
+        assert self.momentum > 0 if self.opt_func == 'sgd' else True, 'Invalid momentum rate'
+
+    def get_model_parameters(self):
+        pass
+
+    def save_model(self, model_path):
+        if not os.path.exists(model_path):
+            os.makedirs(model_path)
+        save_model(model=self._model,
+                   filepath=os.path.join(model_path, self.model_name+'.h5'))
+
+    def load_model(self, model_path):
+        model_file = os.path.join(model_path, self.model_name+'.h5')
+        assert os.path.isfile(model_file), 'Missing model file to load - %s' % model_file
+        self._model = load_model(filepath=model_file)
 
     @staticmethod
     def get_optimizer(opt_func, learning_rate, momentum):
@@ -101,5 +119,9 @@ class Model:
 
         raise Exception('Invalid optimization function')
 
-    def get_model_parameters(self):
-        pass
+    @staticmethod
+    def get_func_params(f):
+        p = inspect.getcallargs(f)
+        if 'self' in p:
+            del p['self']
+        return p

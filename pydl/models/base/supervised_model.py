@@ -25,7 +25,11 @@ class SupervisedModel(Model):
 
         self._create_layers(input_shape, n_output)
 
-        self._model.compile(optimizer=self.opt, loss=self.loss_func)
+        opt = self.get_optimizer(opt_func=self.opt_func,
+                                 learning_rate=self.learning_rate,
+                                 momentum=self.momentum)
+
+        self._model.compile(optimizer=opt, loss=self.loss_func)
 
         self.logger.info('Done building {} model'.format(self.model_name))
 

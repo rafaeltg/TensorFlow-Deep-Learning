@@ -15,7 +15,6 @@ class RNN(SupervisedModel):
 
     def __init__(self,
                  model_name='rnn',
-                 main_dir='rnn/',
                  cell_type='lstm',
                  layers=list([50, 50]),
                  stateful=True,
@@ -33,7 +32,6 @@ class RNN(SupervisedModel):
 
         """
         :param model_name: Name of the model.
-        :param main_dir: Directory to save the model data.
         :param cell_type: Recurrent layers type. ["lstm", "gru", "simple"]
         :param layers: Number of hidden units in each layer.
         :param stateful: Whether the recurrent network is stateful or not.It means that the states
@@ -53,7 +51,6 @@ class RNN(SupervisedModel):
         """
 
         super().__init__(model_name=model_name,
-                         main_dir=main_dir,
                          loss_func=loss_func,
                          num_epochs=num_epochs,
                          batch_size=batch_size,
