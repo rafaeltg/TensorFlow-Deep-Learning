@@ -11,6 +11,7 @@ from pydl.models.nnet_models.mlp import MLP
 from pydl.models.nnet_models.rnn import RNN
 from pydl.utils import datasets
 
+
 """
 """
 def fit(config):
@@ -48,6 +49,8 @@ def predict(config):
     np.save(os.path.join(config['output'], m.name+'_preds.npy'), preds)
 
 
+"""
+"""
 def transform(config):
     print('transform', config)
 
@@ -64,6 +67,8 @@ def transform(config):
     np.save(os.path.join(config['output'], base_name+'_encoded.npy'), x_encoded)
 
 
+"""
+"""
 def reconstruct(config):
     print('reconstruct', config)
 

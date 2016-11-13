@@ -3,7 +3,6 @@ from __future__ import division
 from __future__ import print_function
 
 import keras.models as kmodels
-from keras.models import Sequential
 import pydl.utils.utilities as utils
 from keras.layers import Input, Dense
 from keras.regularizers import l1l2

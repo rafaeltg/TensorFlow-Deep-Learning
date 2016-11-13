@@ -2,10 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import keras.models as kmodels
 from keras.layers import Input
-from keras.models import load_model, save_model
 from pydl.models.base.model import Model
 
 
