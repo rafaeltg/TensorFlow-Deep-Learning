@@ -1,0 +1,11 @@
+{
+  "model": {
+    "class": "ae",
+    "params": {}
+  },
+  "data_set": {
+    "train_x": "/home/rafael/Documents/master/project/databases/bike/bike_train_x.csv",
+    "data_x": "/home/rafael/Documents/master/project/databases/bike/bike_test_x.csv",
+    "has_header": true
+  }
+}

@@ -2,8 +2,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import os
 import inspect
+import os
 
 import keras.optimizers as KOpt
 import numpy as np
@@ -19,7 +19,7 @@ class Model:
     """
 
     def __init__(self,
-                 model_name,
+                 name,
                  loss_func='mse',
                  l1_reg=0.0,
                  l2_reg=0.0,
@@ -32,7 +32,7 @@ class Model:
                  verbose=0):
 
         """
-        :param model_name: Name of the model, used as filename.
+        :param name: Name of the model, used as filename.
         :param loss_func:
         :param l1_reg: L1 weight regularization penalty, also known as LASSO.
         :param l2_reg: L2 weight regularization penalty, also known as weight decay, or Ridge.
@@ -45,7 +45,7 @@ class Model:
         :param verbose: Level of verbosity. 0 - silent, 1 - print.
         """
 
-        self.model_name = model_name
+        self.name = name
         self.loss_func = loss_func
         self.l1_reg = l1_reg
         self.l2_reg = l2_reg
@@ -65,7 +65,7 @@ class Model:
             tf.set_random_seed(seed)
 
         # Create the logger
-        self.logger = Logger(model_name, verbose)
+        self.logger = Logger(name, verbose)
 
     def set_params(self, **params):
         valid_params = self.get_func_params(self.__init__).keys()
@@ -75,7 +75,7 @@ class Model:
         self.validate_params()
 
     def validate_params(self):
-        assert self.model_name is not '', 'Invalid model name'
+        assert self.name is not '', 'Invalid model name'
         assert self.num_epochs > 0, 'Invalid number of training epochs'
         assert self.batch_size > 0, 'Invalid batch size'
         assert self.loss_func in utils.valid_loss_functions, 'Invalid loss function'
@@ -92,10 +92,10 @@ class Model:
         if not os.path.exists(model_path):
             os.makedirs(model_path)
         save_model(model=self._model,
-                   filepath=os.path.join(model_path, self.model_name+'.h5'))
+                   filepath=os.path.join(model_path, self.name+'.h5'))
 
     def load_model(self, model_path):
-        model_file = os.path.join(model_path, self.model_name+'.h5')
+        model_file = os.path.join(model_path, self.name+'.h5')
         assert os.path.isfile(model_file), 'Missing model file to load - %s' % model_file
         self._model = load_model(filepath=model_file)
 

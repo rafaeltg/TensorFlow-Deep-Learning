@@ -1,11 +1,18 @@
+import os
+
+import numpy as np
+from pydl.models.autoencoder_models.autoencoder import Autoencoder
+from pydl.models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder
 from pydl.models.autoencoder_models.stacked_autoencoder import StackedAutoencoder
 from pydl.models.autoencoder_models.stacked_denoising_autoencoder import StackedDenoisingAutoencoder
+from pydl.models.base.supervised_model import SupervisedModel
+from pydl.models.base.unsupervised_model import UnsupervisedModel
 from pydl.models.nnet_models.mlp import MLP
 from pydl.models.nnet_models.rnn import RNN
-from pydl.models.base.supervised_model import SupervisedModel
 from pydl.utils import datasets
 
-
+"""
+"""
 def fit(config):
     print('fit', config)
 
@@ -25,24 +32,52 @@ def fit(config):
     m.save_model(config['output'])
 
 
+"""
+"""
 def predict(config):
     print('predict', config)
 
-    m = get_model(config)
+    m = load_model(config)
+    assert isinstance(m, SupervisedModel), 'The given model cannot perform predict operation'
 
     data_set = get_input_data(config)
     x = load_data(data_set, 'data_x')
 
     preds = m.predict(x)
-    print(preds)
+    # Save predictions as .npy file
+    np.save(os.path.join(config['output'], m.name+'_preds.npy'), preds)
 
 
 def transform(config):
     print('transform', config)
 
+    m = load_model(config)
+    assert isinstance(m, UnsupervisedModel), 'The given model cannot perform transform operation'
+
+    data_set = get_input_data(config)
+    x = load_data(data_set, 'data_x')
+
+    x_encoded = m.transform(x)
+
+    # Save encoded data in a .npy file
+    base_name = os.path.splitext(os.path.basename(data_set['data_x']))[0]
+    np.save(os.path.join(config['output'], base_name+'_encoded.npy'), x_encoded)
+
 
 def reconstruct(config):
     print('reconstruct', config)
+
+    m = load_model(config)
+    assert isinstance(m, UnsupervisedModel), 'The given model cannot perform reconstruct operation'
+
+    data_set = get_input_data(config)
+    x = load_data(data_set, 'data_x')
+
+    x_rec = m.reconstruct(x)
+
+    # Save reconstructed data in a .npy file
+    base_name = os.path.splitext(os.path.basename(data_set['data_x']))[0]
+    np.save(os.path.join(config['output'], base_name+'_reconstructed.npy'), x_rec)
 
 
 def score(config):
@@ -63,7 +98,7 @@ def load_model(config):
 
     print('Model config ===>', model_config)
 
-    m = get_model(model_config)
+    m = get_model_by_class(model_config)
 
     if 'params' in model_config:
         m.set_params(**model_config['params'])
@@ -75,7 +110,7 @@ def load_model(config):
     return m
 
 
-def get_model(model_config):
+def get_model_by_class(model_config):
     assert 'class' in model_config, 'Missing model class!'
     c = model_config['class']
 
@@ -87,6 +122,10 @@ def get_model(model_config):
         return StackedAutoencoder()
     elif c == 'sdae':
         return StackedDenoisingAutoencoder()
+    elif c == 'ae':
+        return Autoencoder()
+    elif c == 'dae':
+        return DenoisingAutoencoder()
     else:
         raise Exception('Invalid model!')
 

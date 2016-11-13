@@ -13,8 +13,7 @@ class UnsupervisedModel(Model):
     """
 
     def __init__(self,
-                 model_name,
-                 main_dir,
+                 name,
                  loss_func='mse',
                  l1_reg=0.0,
                  l2_reg=0.0,
@@ -23,11 +22,10 @@ class UnsupervisedModel(Model):
                  opt='adam',
                  learning_rate=0.001,
                  momentum=0.5,
-                 seed=-1,
+                 seed=42,
                  verbose=0):
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
                          loss_func=loss_func,
                          l1_reg=l1_reg,
                          l2_reg=l2_reg,
@@ -55,7 +53,7 @@ class UnsupervisedModel(Model):
         :return: self
         """
 
-        self.logger.info('Building {} model'.format(self.model_name))
+        self.logger.info('Building {} model'.format(self.name))
 
         self._input = Input(shape=(n_input,), name='x-input')
 
@@ -66,9 +64,9 @@ class UnsupervisedModel(Model):
         self._create_encoder_model()
         self._create_decoder_model()
 
-        self._model.compile(optimizer=self.opt, loss=self.loss_func)
+        self._model.compile(optimizer=self.opt_func, loss=self.loss_func)
 
-        self.logger.info('Done building {} model'.format(self.model_name))
+        self.logger.info('Done building {} model'.format(self.name))
 
     def _create_layers(self, n_input):
         pass
@@ -87,7 +85,7 @@ class UnsupervisedModel(Model):
         :return:
         """
 
-        self.logger.info('Starting {} unsupervised training...'.format(self.model_name))
+        self.logger.info('Starting {} unsupervised training...'.format(self.name))
 
         self.build_model(x_train.shape[1])
 
@@ -99,7 +97,7 @@ class UnsupervisedModel(Model):
                         validation_data=(x_valid, x_valid) if x_valid else None,
                         verbose=self.verbose)
 
-        self.logger.info('Done {} unsupervised training...'.format(self.model_name))
+        self.logger.info('Done {} unsupervised training...'.format(self.name))
 
     def transform(self, data):
 

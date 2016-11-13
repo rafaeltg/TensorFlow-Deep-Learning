@@ -1,6 +1,8 @@
 import argparse
 import json
+import os
 import os.path
+
 import cmd_runner.operations as op
 
 parser = argparse.ArgumentParser(prog='pydl_cli')
@@ -27,9 +29,8 @@ args = parser.parse_args()
 
 
 def run():
-
     configs = get_config(args.config)
-    configs['output'] = args.output
+    configs['output'] = args.output if args.output != '' else os.getcwd()
     args.func(configs)
 
 

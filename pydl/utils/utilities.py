@@ -67,17 +67,16 @@ def create_dir(dir_path):
         raise e
 
 
-def expand_args(args_to_expand):
+def expand_args(layers, args_to_expand):
 
     """Expands all the lists in args_to_expand into the length of layers.
     This is used as a convenience so that the user does not need to specify the
     complete list of parameters for model initialization.
     IE: the user can just specify one parameter and this function will expand it
+    :param layers:
     :param args_to_expand:
     :return:
     """
-
-    layers = args_to_expand['layers']
 
     for key, val in args_to_expand.items():
         if isinstance(val, list) and (len(val) != len(layers)):

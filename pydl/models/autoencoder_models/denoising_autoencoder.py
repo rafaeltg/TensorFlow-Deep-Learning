@@ -12,8 +12,7 @@ class DenoisingAutoencoder(Autoencoder):
     """
 
     def __init__(self,
-                 model_name='dae',
-                 main_dir='dae/',
+                 name='dae',
                  n_hidden=32,
                  enc_act_func='relu',
                  dec_act_func='linear',
@@ -49,8 +48,7 @@ class DenoisingAutoencoder(Autoencoder):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
                          n_hidden=n_hidden,
                          enc_act_func=enc_act_func,
                          dec_act_func=dec_act_func,

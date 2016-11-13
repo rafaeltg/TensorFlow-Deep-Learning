@@ -16,8 +16,7 @@ class VariationalAutoencoder(UnsupervisedModel):
     """
 
     def __init__(self,
-                 model_name='vae',
-                 main_dir='vae/',
+                 name='vae',
                  n_latent=10,
                  n_hidden=64,
                  enc_act_func='relu',
@@ -44,8 +43,7 @@ class VariationalAutoencoder(UnsupervisedModel):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
                          loss_func='custom',
                          num_epochs=num_epochs,
                          batch_size=batch_size,
@@ -82,7 +80,7 @@ class VariationalAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} layers'.format(self.model_name))
+        self.logger.info('Creating {} layers'.format(self.name))
 
         self.n_inputs = n_inputs
 
@@ -107,12 +105,12 @@ class VariationalAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} encoder model'.format(self.model_name))
+        self.logger.info('Creating {} encoder model'.format(self.name))
 
         # This model maps an input to its encoded representation
         self._encoder = kmodels.Model(input=self._input, output=self.z_mean)
 
-        self.logger.info('Done creating {} encoder model'.format(self.model_name))
+        self.logger.info('Done creating {} encoder model'.format(self.name))
 
     def _create_decoder_model(self):
 
@@ -120,7 +118,7 @@ class VariationalAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} decoder model'.format(self.model_name))
+        self.logger.info('Creating {} decoder model'.format(self.name))
 
         encoded_input = Input(shape=(self.n_latent,))
 
@@ -130,7 +128,7 @@ class VariationalAutoencoder(UnsupervisedModel):
         # create the decoder model
         self._decoder = kmodels.Model(input=encoded_input, output=decoder_layer)
 
-        self.logger.info('Done creating {} decoding layer'.format(self.model_name))
+        self.logger.info('Done creating {} decoding layer'.format(self.name))
 
     def _sampling(self, args):
         z_mean, z_log_var = args

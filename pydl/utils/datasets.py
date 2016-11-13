@@ -1,7 +1,8 @@
 import collections
 import os
-import pandas
+
 import numpy as np
+import pandas
 
 Dataset = collections.namedtuple('Dataset', ['x', 'y'])
 Datasets = collections.namedtuple('Datasets', ['train', 'test', 'validation'])
