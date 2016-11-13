@@ -96,8 +96,6 @@ def load_model(config):
     assert 'model' in config, 'Missing model definition!'
     model_config = config['model']
 
-    print('Model config ===>', model_config)
-
     m = get_model_by_class(model_config)
 
     if 'params' in model_config:

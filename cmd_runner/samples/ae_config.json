@@ -1,7 +1,7 @@
 {
   "model": {
     "class": "ae",
-    "params": {}
+    "path": "/home/rafael/Desktop/models/ae"
   },
   "data_set": {
     "train_x": "/home/rafael/Documents/master/project/databases/bike/bike_train_x.csv",

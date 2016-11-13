@@ -2,8 +2,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import keras.models as kmodels
 from keras.layers import Input
+from keras.models import load_model, save_model
 from pydl.models.base.model import Model
 
 
@@ -58,13 +60,16 @@ class UnsupervisedModel(Model):
         self._input = Input(shape=(n_input,), name='x-input')
 
         self._create_layers(n_input)
-
         self._model = kmodels.Model(input=self._input, output=self._decode_layer)
 
         self._create_encoder_model()
         self._create_decoder_model()
 
-        self._model.compile(optimizer=self.opt_func, loss=self.loss_func)
+        opt = self.get_optimizer(opt_func=self.opt_func,
+                                 learning_rate=self.learning_rate,
+                                 momentum=self.momentum)
+
+        self._model.compile(optimizer=opt, loss=self.loss_func)
 
         self.logger.info('Done building {} model'.format(self.name))
 
@@ -142,3 +147,8 @@ class UnsupervisedModel(Model):
         if type(loss) is list:
             return loss[0]
         return loss
+
+    def load_model(self, model_path):
+        super().load_model(model_path)
+        self._create_encoder_model()
+        self._create_decoder_model()

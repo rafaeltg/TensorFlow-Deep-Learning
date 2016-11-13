@@ -96,8 +96,12 @@ class Model:
 
     def load_model(self, model_path):
         model_file = os.path.join(model_path, self.name+'.h5')
-        assert os.path.isfile(model_file), 'Missing model file to load - %s' % model_file
-        self._model = load_model(filepath=model_file)
+        self._model = self.model_from_config(model_file)
+
+    @staticmethod
+    def model_from_config(config_file):
+        assert os.path.isfile(config_file), 'Missing file - %s' % config_file
+        return load_model(filepath=config_file)
 
     @staticmethod
     def get_optimizer(opt_func, learning_rate, momentum):

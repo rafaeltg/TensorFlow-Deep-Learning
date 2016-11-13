@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import keras.models as kmodels
+from keras.models import Sequential
 import pydl.utils.utilities as utils
 from keras.layers import Input, Dense
 from keras.regularizers import l1l2
@@ -70,7 +71,6 @@ class Autoencoder(UnsupervisedModel):
         assert self.enc_act_func in utils.valid_act_functions
         assert self.dec_act_func in utils.valid_act_functions
 
-
     def _create_layers(self, n_inputs):
 
         """ Create the encoding and the decoding layers of the autoencoder.
@@ -96,7 +96,8 @@ class Autoencoder(UnsupervisedModel):
 
         self.logger.info('Creating {} encoder model'.format(self.name))
 
-        self._encoder = kmodels.Model(input=self._input, output=self._encode_layer)
+        self._encoder = kmodels.Model(input=self._model.layers[0].inbound_nodes[0].output_tensors,
+                                      output=self._model.layers[1].outbound_nodes[0].output_tensors)
 
         self.logger.info('Done creating {} encoder model'.format(self.name))
 
@@ -108,12 +109,13 @@ class Autoencoder(UnsupervisedModel):
 
         self.logger.info('Creating {} decoder model'.format(self.name))
 
-        self._encoded_input = Input(shape=(self.n_hidden,))
+        encoded_input = Input(shape=(self.n_hidden,))
 
         # retrieve the last layer of the autoencoder model
         decoder_layer = self._model.layers[-1]
 
-        self._decoder = kmodels.Model(input=self._encoded_input, output=decoder_layer(self._encoded_input))
+        self._decoder = kmodels.Model(input=encoded_input,
+                                      output=decoder_layer(encoded_input))
 
         self.logger.info('Done creating {} decoding layer'.format(self.name))
 
