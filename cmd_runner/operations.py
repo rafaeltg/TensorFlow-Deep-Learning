@@ -12,9 +12,10 @@ from pydl.models.nnet_models.rnn import RNN
 from pydl.utils import datasets
 
 
-"""
-"""
 def fit(config):
+    """
+    """
+
     print('fit', config)
 
     m = load_model(config)
@@ -33,9 +34,10 @@ def fit(config):
     m.save_model(config['output'])
 
 
-"""
-"""
 def predict(config):
+    """
+    """
+
     print('predict', config)
 
     m = load_model(config)
@@ -49,9 +51,10 @@ def predict(config):
     np.save(os.path.join(config['output'], m.name+'_preds.npy'), preds)
 
 
-"""
-"""
 def transform(config):
+    """
+    """
+
     print('transform', config)
 
     m = load_model(config)
@@ -67,9 +70,10 @@ def transform(config):
     np.save(os.path.join(config['output'], base_name+'_encoded.npy'), x_encoded)
 
 
-"""
-"""
 def reconstruct(config):
+    """
+    """
+
     print('reconstruct', config)
 
     m = load_model(config)
@@ -86,10 +90,15 @@ def reconstruct(config):
 
 
 def score(config):
+    """
+    """
+
     print('score', config)
 
 
 def validate(config):
+    """
+    """
     print('validate', config)
 
 

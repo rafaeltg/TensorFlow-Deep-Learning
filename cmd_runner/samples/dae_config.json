@@ -1,0 +1,15 @@
+{
+  "model": {
+    "class": "dae",
+    "params": {
+      "corr_type": "masking",
+      "corr_param": 0.2
+    },
+    "path": "/home/rafael/Desktop/models/dae"
+  },
+  "data_set": {
+    "train_x": "/home/rafael/Documents/master/project/databases/bike/bike_train_x.csv",
+    "data_x": "/home/rafael/Documents/master/project/databases/bike/bike_test_x.csv",
+    "has_header": true
+  }
+}

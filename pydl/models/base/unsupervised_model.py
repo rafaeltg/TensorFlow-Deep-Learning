@@ -40,7 +40,6 @@ class UnsupervisedModel(Model):
         # Model input data
         self._input = None
 
-        self._encode_layer = None
         self._decode_layer = None
 
         self._encoder = None

@@ -79,13 +79,13 @@ class Autoencoder(UnsupervisedModel):
 
         self.logger.info('Creating {} layers'.format(self.name))
 
-        self._encode_layer = Dense(output_dim=self.n_hidden,
-                                   activation=self.enc_act_func,
-                                   W_regularizer=l1l2(self.l1_reg, self.l2_reg),
-                                   b_regularizer=l1l2(self.l1_reg, self.l2_reg))(self._input)
+        encode_layer = Dense(output_dim=self.n_hidden,
+                             activation=self.enc_act_func,
+                             W_regularizer=l1l2(self.l1_reg, self.l2_reg),
+                             b_regularizer=l1l2(self.l1_reg, self.l2_reg))(self._input)
 
         self._decode_layer = Dense(output_dim=n_inputs,
-                                   activation=self.dec_act_func)(self._encode_layer)
+                                   activation=self.dec_act_func)(encode_layer)
 
     def _create_encoder_model(self):
 
