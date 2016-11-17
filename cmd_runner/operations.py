@@ -1,5 +1,5 @@
 import os
-
+import json
 import numpy as np
 from pydl.models.autoencoder_models.autoencoder import Autoencoder
 from pydl.models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder
@@ -10,6 +10,7 @@ from pydl.models.base.unsupervised_model import UnsupervisedModel
 from pydl.models.nnet_models.mlp import MLP
 from pydl.models.nnet_models.rnn import RNN
 from pydl.utils import datasets
+from validator.model_validator import ModelValidator
 
 
 def fit(config):
@@ -95,11 +96,35 @@ def score(config):
 
     print('score', config)
 
+    m = load_model(config)
+
 
 def validate(config):
     """
     """
     print('validate', config)
+
+    m = load_model(config)
+
+    data_set = get_input_data(config)
+    x = load_data(data_set, 'data_x')
+    y = load_data(data_set, 'data_y')
+
+    # Get validation method
+    assert 'cv' in config, 'Missing cross-validation configurations!'
+    cv_config = config['cv']
+    assert 'method' in cv_config, 'Missing cross-validation method!'
+    method = cv_config['method']
+    params = cv_config['params'] if 'params' in cv_config else {}
+    metrics = cv_config['metrics'] if 'metrics' in cv_config else []
+
+    cv = ModelValidator(method=method, **params)
+    results = cv.run(model=m, x=x, y=y, metrics=metrics)
+
+    # Save results into a JSON file
+    file = os.path.join(config['output'], m.name+'_cv.json')
+    with open(file, 'w') as outfile:
+        json.dump(results, outfile, sort_keys=False, indent=4, ensure_ascii=False)
 
 
 def optimize(config):
