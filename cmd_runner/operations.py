@@ -1,5 +1,6 @@
-import os
 import json
+import os
+
 import numpy as np
 from pydl.models.autoencoder_models.autoencoder import Autoencoder
 from pydl.models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder

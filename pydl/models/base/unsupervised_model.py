@@ -56,7 +56,7 @@ class UnsupervisedModel(Model):
 
         self._input = Input(shape=(n_input,), name='x-input')
 
-        self._create_layers(n_input)
+        self._create_layers(self._input)
         self._model = kmodels.Model(input=self._input, output=self._decode_layer)
 
         self._create_encoder_model()

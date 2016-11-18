@@ -2,8 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import numpy as np
-from keras.backend import dropout, get_value
+from keras.layers.noise import GaussianDropout, GaussianNoise
 from pydl.models.autoencoder_models.autoencoder import Autoencoder
 
 
@@ -75,25 +74,12 @@ class DenoisingAutoencoder(Autoencoder):
         assert self.corr_param > 0 if self.corr_type == 'gaussian' else True, 'Invalid scale parameter for gaussian corruption'
         assert 0 <= self.corr_param <= 1.0 if self.corr_type == 'masking' else True, 'Invalid keep_prob parameter for masking corruption'
 
-    def fit(self, x_train, x_valid=None):
+    def _create_layers(self, input_layer):
 
-        x_train, x_valid = self._corrupt_input(x_train, x_valid)
-        super().fit(x_train, x_valid)
-
-    def _corrupt_input(self, x_train, x_valid=None):
-
-        """ Apply some noise to the input data.
-        :return:
-        """
-
-        self.logger.info('Corrupting Input - {}'.format(self.corr_type))
-
+        # Corrupt the input
         if self.corr_type == 'masking':
-            x_train_corr = get_value(dropout(x=x_train, level=self.corr_param))
-            x_valid_corr = get_value(dropout(x=x_valid, level=self.corr_param)) if x_valid else None
-
+            corr_input = GaussianDropout(self.corr_param)(input_layer)
         else:
-            x_train_corr = x_train + np.random.normal(loc=0.0, scale=self.corr_param, size=x_train.shape)
-            x_valid_corr = x_valid + np.random.normal(loc=0.0, scale=self.corr_param, size=x_valid.shape) if x_valid else 0
+            corr_input = GaussianNoise(self.corr_param)(input_layer)
 
-        return x_train_corr, x_valid_corr
+        super()._create_layers(corr_input)

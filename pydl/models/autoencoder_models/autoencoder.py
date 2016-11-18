@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import keras.backend as K
 import keras.models as kmodels
 import pydl.utils.utilities as utils
 from keras.layers import Input, Dense
@@ -70,10 +71,10 @@ class Autoencoder(UnsupervisedModel):
         assert self.enc_act_func in utils.valid_act_functions
         assert self.dec_act_func in utils.valid_act_functions
 
-    def _create_layers(self, n_inputs):
+    def _create_layers(self, input_layer):
 
         """ Create the encoding and the decoding layers of the autoencoder.
-        :param n_inputs: Input size
+        :param input_layer:
         :return: self
         """
 
@@ -84,6 +85,7 @@ class Autoencoder(UnsupervisedModel):
                              W_regularizer=l1l2(self.l1_reg, self.l2_reg),
                              b_regularizer=l1l2(self.l1_reg, self.l2_reg))(self._input)
 
+        n_inputs = K.int_shape(input_layer)[1]
         self._decode_layer = Dense(output_dim=n_inputs,
                                    activation=self.dec_act_func)(encode_layer)
 
