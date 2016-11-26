@@ -2,8 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import pydl.utils.utilities as utils
 from keras.models import Sequential
+
+import pydl.utils.utilities as utils
 from pydl.models.base.model import Model
 
 

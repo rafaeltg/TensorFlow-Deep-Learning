@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
+
 import validator.cv_methods as valid
 from pydl.models.base.supervised_model import SupervisedModel
 from validator.cv_metrics import available_metrics
@@ -106,7 +107,8 @@ class ModelValidator(object):
 
         return cv_metrics
 
-    def _init_cv_metrics(self, metrics):
+    @staticmethod
+    def _init_cv_metrics(metrics):
         cv_metrics = {'scores': []}
         if len(metrics) > 0:
             for m in metrics:

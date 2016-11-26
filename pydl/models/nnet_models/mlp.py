@@ -4,6 +4,7 @@ from __future__ import print_function
 
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1l2
+
 from pydl.models.base.supervised_model import SupervisedModel
 
 

@@ -3,9 +3,10 @@ from __future__ import division
 from __future__ import print_function
 
 import keras.models as kmodels
-import pydl.utils.utilities as utils
 from keras.layers import Input, Dense
 from keras.regularizers import l1l2
+
+import pydl.utils.utilities as utils
 from pydl.models.base.unsupervised_model import UnsupervisedModel
 
 

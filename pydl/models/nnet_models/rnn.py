@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import numpy as np
 from keras.layers import Dense, Dropout, LSTM, GRU, SimpleRNN
+
 from pydl.models.base.supervised_model import SupervisedModel
 
 

@@ -1,7 +1,9 @@
 {
   "model": {
     "class": "mlp",
-    "path": "/home/rafael/Desktop/models/mlp/"
+    "params": {
+      "layers": [50, 50, 25]
+    }
   },
   "data_set": {
     "train_x": "/home/rafael/Documents/master/project/databases/bike/bike_train_x.csv",

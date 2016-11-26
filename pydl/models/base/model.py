@@ -7,9 +7,10 @@ import os
 
 import keras.optimizers as KOpt
 import numpy as np
-import pydl.utils.utilities as utils
 import tensorflow as tf
 from keras.models import load_model, save_model
+
+import pydl.utils.utilities as utils
 from pydl.utils.logger import Logger
 
 

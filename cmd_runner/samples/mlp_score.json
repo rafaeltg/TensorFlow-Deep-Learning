@@ -1,0 +1,12 @@
+{
+  "model": {
+    "class": "mlp",
+    "path": "/home/rafael/Desktop/models/mlp/"
+  },
+  "metrics": ["rmse", "mape"],
+  "data_set": {
+    "data_x": "/home/rafael/Documents/master/project/databases/bike/bike_test_x.csv",
+    "data_y": "/home/rafael/Documents/master/project/databases/bike/bike_test_y.csv",
+    "has_header": true
+  }
+}
