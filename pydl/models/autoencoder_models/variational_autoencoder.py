@@ -44,6 +44,11 @@ class VariationalAutoencoder(UnsupervisedModel):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
+        self.n_latent = n_latent
+        self.n_hidden = n_hidden
+        self.enc_act_func = enc_act_func
+        self.dec_act_func = dec_act_func
+
         super().__init__(name=name,
                          loss_func='custom',
                          num_epochs=num_epochs,
@@ -54,19 +59,6 @@ class VariationalAutoencoder(UnsupervisedModel):
                          seed=seed,
                          verbose=verbose)
 
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert n_latent > 0
-        # assert all([l > 0 for l in n_hidden])
-        assert enc_act_func in utils.valid_act_functions
-        assert dec_act_func in utils.valid_act_functions
-
-        self.n_latent = n_latent
-        self.n_hidden = n_hidden
-        self.enc_act_func = enc_act_func
-        self.dec_act_func = dec_act_func
-
         self.z_mean = None
         self.z_log_var = None
 
@@ -74,6 +66,13 @@ class VariationalAutoencoder(UnsupervisedModel):
         self.n_inputs = None
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
+
+    def validate_params(self):
+        super().validate_params()
+        assert self.n_latent > 0
+        assert self.n_hidden > 0
+        assert self.enc_act_func in utils.valid_act_functions
+        assert self.dec_act_func in utils.valid_act_functions
 
     def _create_layers(self, n_inputs):
 
