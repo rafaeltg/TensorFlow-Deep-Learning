@@ -3,6 +3,8 @@ from __future__ import division
 from __future__ import print_function
 
 from keras.models import Sequential
+
+import pydl.utils.utilities as utils
 from pydl.models.base.model import Model
 
 
@@ -10,6 +12,48 @@ class SupervisedModel(Model):
 
     """ Class representing an abstract Supervised Model.
     """
+
+    def __init__(self,
+                 name,
+                 layers,
+                 enc_act_func='relu',
+                 dec_act_func='linear',
+                 l1_reg=0.0,
+                 l2_reg=0.0,
+                 dropout=0.4,
+                 loss_func='mse',
+                 num_epochs=10,
+                 batch_size=100,
+                 opt='adam',
+                 learning_rate=0.001,
+                 momentum=0.5,
+                 verbose=0,
+                 seed=42):
+
+        self.layers = layers
+        self.enc_act_func = enc_act_func
+        self.dec_act_func = dec_act_func
+        self.dropout = dropout
+
+        super().__init__(name=name,
+                         loss_func=loss_func,
+                         l1_reg=l1_reg,
+                         l2_reg=l2_reg,
+                         num_epochs=num_epochs,
+                         batch_size=batch_size,
+                         opt=opt,
+                         learning_rate=learning_rate,
+                         momentum=momentum,
+                         seed=seed,
+                         verbose=verbose)
+
+    def validate_params(self):
+        super().validate_params()
+        assert len(self.layers) > 0, 'Model must have at least one hidden layer'
+        assert all([l > 0 for l in self.layers]), 'Invalid hidden layer size'
+        assert self.enc_act_func in utils.valid_act_functions, 'Invalid hidden layer activation function'
+        assert self.dec_act_func in utils.valid_act_functions, 'Invalid decoder layer activation function'
+        assert 0 <= self.dropout <= 1.0, 'Invalid dropout rate'
 
     def build_model(self, input_shape, n_output=1):
 
@@ -19,15 +63,19 @@ class SupervisedModel(Model):
         :return: self
         """
 
-        self.logger.info('Building {} model'.format(self.model_name))
+        self.logger.info('Building {} model'.format(self.name))
 
         self._model = Sequential()
 
         self._create_layers(input_shape, n_output)
 
-        self._model.compile(optimizer=self.opt, loss=self.loss_func)
+        opt = self.get_optimizer(opt_func=self.opt_func,
+                                 learning_rate=self.learning_rate,
+                                 momentum=self.momentum)
 
-        self.logger.info('Done building {} model'.format(self.model_name))
+        self._model.compile(optimizer=opt, loss=self.loss_func)
+
+        self.logger.info('Done building {} model'.format(self.name))
 
     def _create_layers(self, input_shape, n_output):
         pass
@@ -42,7 +90,7 @@ class SupervisedModel(Model):
         :return: self
         """
 
-        self.logger.info('Starting {} supervised training...'.format(self.model_name))
+        self.logger.info('Starting {} supervised training...'.format(self.name))
 
         if len(y_train.shape) != 1:
             num_out = y_train.shape[1]
@@ -54,7 +102,7 @@ class SupervisedModel(Model):
 
         self._train_step(x_train, y_train, x_valid, y_valid)
 
-        self.logger.info('Done {} supervised training...'.format(self.model_name))
+        self.logger.info('Done {} supervised training...'.format(self.name))
 
     def _train_step(self, x_train, y_train, x_valid=None, y_valid=None):
 

@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 from keras.layers.noise import GaussianDropout, GaussianNoise
+
 from pydl.models.autoencoder_models.autoencoder import Autoencoder
 
 
@@ -12,8 +13,7 @@ class DenoisingAutoencoder(Autoencoder):
     """
 
     def __init__(self,
-                 model_name='dae',
-                 main_dir='dae/',
+                 name='dae',
                  n_hidden=32,
                  enc_act_func='relu',
                  dec_act_func='linear',
@@ -44,13 +44,15 @@ class DenoisingAutoencoder(Autoencoder):
         :param momentum: Momentum parameter.
         :param corr_type: Type of input corruption. ["masking", "gaussian"]
         :param corr_param: 'scale' parameter for Aditive Gaussian Corruption ('gaussian') or
-                           'keep_prob' parameter for Masking Corruption ('masking')
+                           'noise_level' - fraction of the entries that will be set to 0 (Masking Corruption - 'masking')
         :param verbose: Level of verbosity. 0 - silent, 1 - print
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        self.corr_type = corr_type
+        self.corr_param = corr_param
+
+        super().__init__(name=name,
                          n_hidden=n_hidden,
                          enc_act_func=enc_act_func,
                          dec_act_func=dec_act_func,
@@ -65,39 +67,20 @@ class DenoisingAutoencoder(Autoencoder):
                          verbose=verbose,
                          seed=seed)
 
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert corr_type in ['masking', 'gaussian']
-        assert corr_param > 0 if corr_type == 'gaussian' else True
-        assert 0 <= corr_param <= 1.0 if corr_type == 'masking' else True
-
-        self.corr_type = corr_type
-        self.corr_param = corr_param
-
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def _create_layers(self, n_inputs):
+    def validate_params(self):
+        super().validate_params()
+        assert self.corr_type in ['masking', 'gaussian'], 'Invalid corruption type'
+        assert self.corr_param > 0 if self.corr_type == 'gaussian' else True, 'Invalid scale parameter for gaussian corruption'
+        assert 0 <= self.corr_param <= 1.0 if self.corr_type == 'masking' else True, 'Invalid keep_prob parameter for masking corruption'
 
-        """ Create the encoding and the decoding layers of the autoencoder.
-        :param n_inputs: Input size.
-        :return:
-        """
+    def _create_layers(self, input_layer):
 
-        self._corrupt_input()
-
-        super()._create_layers(n_inputs)
-
-    def _corrupt_input(self):
-
-        """ Apply some noise to the input data.
-        :return:
-        """
-
-        self.logger.info('Corrupting Input - {}'.format(self.corr_type))
-
+        # Corrupt the input
         if self.corr_type == 'masking':
-            self._encode_layer = GaussianDropout(p=self.corr_param)(self._input)
-
+            corr_input = GaussianDropout(self.corr_param)(input_layer)
         else:
-            self._encode_layer = GaussianNoise(sigma=self.corr_param)(self._input)
+            corr_input = GaussianNoise(self.corr_param)(input_layer)
+
+        super()._create_layers(corr_input)

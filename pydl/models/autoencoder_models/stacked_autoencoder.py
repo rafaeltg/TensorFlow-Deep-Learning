@@ -2,8 +2,10 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import pydl.utils.utilities as utils
 from keras.layers import Dense, Dropout
+from keras.regularizers import l1l2
+
+import pydl.utils.utilities as utils
 from pydl.models.autoencoder_models.autoencoder import Autoencoder
 from pydl.models.base.supervised_model import SupervisedModel
 
@@ -14,8 +16,7 @@ class StackedAutoencoder(SupervisedModel):
     """
 
     def __init__(self,
-                 model_name='sae',
-                 main_dir='sae/',
+                 name='sae',
                  layers=list([64, 32]),
                  enc_act_func=list(['relu']),
                  dec_act_func=list(['linear']),
@@ -31,6 +32,8 @@ class StackedAutoencoder(SupervisedModel):
                  finetune_loss_func='mse',
                  finetune_enc_act_func='linear',
                  finetune_dec_act_func='linear',
+                 finetune_l1_reg=0,
+                 finetune_l2_reg=0,
                  finetune_opt='adam',
                  finetune_learning_rate=0.001,
                  finetune_momentum=0.5,
@@ -55,6 +58,8 @@ class StackedAutoencoder(SupervisedModel):
         :param finetune_loss_func: loss function for the finetuning step.
         :param finetune_enc_act_func: Finetuning step  hidden layers activation function.
         :param finetune_dec_act_func: Finetuning step output layer activation function.
+        :param finetune_l1_reg:
+        :param finetune_l2_reg:
         :param finetune_opt: Optimization function for the finetuning step.
         :param finetune_learning_rate: Learning rate for the finetuning.
         :param finetune_momentum: Momentum for the finetuning.
@@ -64,48 +69,37 @@ class StackedAutoencoder(SupervisedModel):
         :param verbose:
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
+                         layers=layers,
+                         enc_act_func=finetune_enc_act_func,
+                         dec_act_func=finetune_dec_act_func,
                          loss_func=finetune_loss_func,
+                         l1_reg=finetune_l1_reg,
+                         l2_reg=finetune_l2_reg,
+                         dropout=hidden_dropout,
                          num_epochs=finetune_num_epochs,
                          batch_size=finetune_batch_size,
                          opt=finetune_opt,
                          learning_rate=finetune_learning_rate,
                          momentum=finetune_momentum,
-                         verbose=verbose,
-                         seed=seed)
-
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert len(layers) > 0
-        assert all([l > 0 for l in layers])
-        assert finetune_enc_act_func in utils.valid_act_functions
-        assert finetune_dec_act_func in utils.valid_act_functions
-        assert 0 <= hidden_dropout <= 1.0
+                         seed=seed,
+                         verbose=verbose)
 
         # Autoencoder parameters
-        ae_args = {
-            'layers':        layers,
-            'enc_act_func':  enc_act_func,
-            'dec_act_func':  dec_act_func,
-            'l1_reg':        l1_reg,
-            'l2_reg':        l2_reg,
-            'loss_func':     loss_func,
-            'num_epochs':    num_epochs,
-            'batch_size':    batch_size,
-            'opt':           opt,
-            'learning_rate': learning_rate,
-            'momentum':      momentum,
-        }
-
-        self.ae_args = utils.expand_args(ae_args)
+        self.ae_type = Autoencoder
+        self.ae_enc_act_func = enc_act_func
+        self.ae_dec_act_func = dec_act_func
+        self.ae_l1_reg = l1_reg
+        self.ae_l2_reg = l2_reg
+        self.ae_loss_func = loss_func
+        self.ae_num_epochs = num_epochs
+        self.ae_batch_size = batch_size
+        self.ae_opt = opt
+        self.ae_learning_rate = learning_rate
+        self.ae_momentum = momentum
 
         # Finetuning parameters
         self.pretrain_params = []
-        self.enc_act_func = finetune_enc_act_func
-        self.dec_act_func = finetune_dec_act_func
-        self.dropout = hidden_dropout
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
@@ -125,7 +119,9 @@ class StackedAutoencoder(SupervisedModel):
 
             self._model.add(Dense(output_dim=l,
                                   weights=self.pretrain_params[n],
-                                  activation=self.enc_act_func))
+                                  activation=self.enc_act_func,
+                                  W_regularizer=l1l2(self.l1_reg, self.l2_reg),
+                                  b_regularizer=l1l2(self.l1_reg, self.l2_reg)))
 
         # Output layer
         self._model.add(Dropout(p=self.dropout))
@@ -140,16 +136,20 @@ class StackedAutoencoder(SupervisedModel):
         :return: self
         """
 
-        self.logger.info('Starting {} unsupervised pretraining...'.format(self.model_name))
+        self.logger.info('Starting {} unsupervised pretraining...'.format(self.name))
+
+        self.pretrain_params = []
 
         next_train = x_train
         next_valid = x_valid
 
-        for l in range(len(self.ae_args['layers'])):
+        aes = self._get_autoencoders_params()
 
-            self.logger.info('Pre-training layer {}'.format(l))
+        for i, ae_params in enumerate(aes):
 
-            ae = self._get_autoencoder(l)
+            self.logger.info('Pre-training layer {}'.format(i))
+
+            ae = self.ae_type(**ae_params)
 
             # Pretrain a single autoencoder
             ae.fit(next_train, next_valid)
@@ -165,24 +165,35 @@ class StackedAutoencoder(SupervisedModel):
             if x_valid:
                 next_valid = ae.transform(data=next_valid)
 
-        self.logger.info('Done {} unsupervised pretraining...'.format(self.model_name))
+        self.logger.info('Done {} unsupervised pretraining...'.format(self.name))
 
-    def _get_autoencoder(self, n):
+    def _get_ae_args(self):
+        return {
+            'enc_act_func':  self.ae_enc_act_func,
+            'dec_act_func':  self.ae_dec_act_func,
+            'l1_reg':        self.ae_l1_reg,
+            'l2_reg':        self.ae_l2_reg,
+            'loss_func':     self.ae_loss_func,
+            'num_epochs':    self.ae_num_epochs,
+            'batch_size':    self.ae_batch_size,
+            'opt':           self.ae_opt,
+            'learning_rate': self.ae_learning_rate,
+            'momentum':      self.ae_momentum,
+        }
 
-        return Autoencoder(model_name='{}_ae_{}'.format(self.model_name, n),
-                           main_dir=self.main_dir,
-                           n_hidden=self.ae_args['layers'][n],
-                           enc_act_func=self.ae_args['enc_act_func'][n],
-                           dec_act_func=self.ae_args['dec_act_func'][n],
-                           l1_reg=self.ae_args['l1_reg'][n],
-                           l2_reg=self.ae_args['l2_reg'][n],
-                           loss_func=self.ae_args['loss_func'][n],
-                           num_epochs=self.ae_args['num_epochs'][n],
-                           batch_size=self.ae_args['batch_size'][n],
-                           opt=self.ae_args['opt'][n],
-                           learning_rate=self.ae_args['learning_rate'][n],
-                           momentum=self.ae_args['momentum'][n],
-                           verbose=self.verbose)
+    def _get_autoencoders_params(self):
+        ae_args = utils.expand_args(self.layers, self._get_ae_args())
+        aes_params = []
+
+        for i, l in enumerate(self.layers):
+            ae_params = {
+                'name': self.name + '_ae_{}'.format(i),
+                'n_hidden': l,
+                'verbose': self.verbose}
+            ae_params.update(dict((k, v[i]) for k, v in ae_args.items()))
+            aes_params.append(ae_params)
+
+        return aes_params
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):
 

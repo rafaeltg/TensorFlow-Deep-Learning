@@ -1,0 +1,18 @@
+{
+  "model": {
+    "class": "mlp",
+    "params": {}
+  },
+  "cv": {
+    "method": "kfold",
+    "params": {
+      "n_splits": 3
+    },
+    "metrics": ["rmse", "mse"]
+  },
+  "data_set": {
+    "data_x": "/home/rafael/Documents/master/project/databases/bike/bike_train_x.csv",
+    "data_y": "/home/rafael/Documents/master/project/databases/bike/bike_train_y.csv",
+    "has_header": true
+  }
+}

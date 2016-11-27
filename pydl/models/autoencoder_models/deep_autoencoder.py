@@ -3,9 +3,10 @@ from __future__ import division
 from __future__ import print_function
 
 import keras.models as kmodels
-import pydl.utils.utilities as utils
 from keras.layers import Input, Dense
 from keras.regularizers import l1l2
+
+import pydl.utils.utilities as utils
 from pydl.models.base.unsupervised_model import UnsupervisedModel
 
 
@@ -15,8 +16,7 @@ class DeepAutoencoder(UnsupervisedModel):
     """
 
     def __init__(self,
-                 model_name='deep_ae',
-                 main_dir='deep_ae/',
+                 name='deep_ae',
                  n_hidden=list([64, 32, 16]),
                  enc_act_func='relu',
                  dec_act_func='linear',
@@ -47,8 +47,7 @@ class DeepAutoencoder(UnsupervisedModel):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
                          loss_func=loss_func,
                          l1_reg=l1_reg,
                          l2_reg=l2_reg,
@@ -81,7 +80,7 @@ class DeepAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} layers'.format(self.model_name))
+        self.logger.info('Creating {} layers'.format(self.name))
 
         self._encode_layer = self._input
         for l in self.n_hidden:
@@ -101,11 +100,12 @@ class DeepAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} encoder model'.format(self.model_name))
+        self.logger.info('Creating {} encoder model'.format(self.name))
 
-        self._encoder = kmodels.Model(input=self._input, output=self._encode_layer)
+        self._encoder = kmodels.Model(input=self._model.layers[0].inbound_nodes[0].output_tensors,
+                                      output=self._encode_layer)
 
-        self.logger.info('Done creating {} encoder model'.format(self.model_name))
+        self.logger.info('Done creating {} encoder model'.format(self.name))
 
     def _create_decoder_model(self):
 
@@ -113,7 +113,7 @@ class DeepAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} decoder model'.format(self.model_name))
+        self.logger.info('Creating {} decoder model'.format(self.name))
 
         encoded_input = Input(shape=(self.n_hidden[-1],))
 
@@ -123,7 +123,7 @@ class DeepAutoencoder(UnsupervisedModel):
 
         self._decoder = kmodels.Model(input=encoded_input, output=decoder_layer)
 
-        self.logger.info('Done creating {} decoding layer'.format(self.model_name))
+        self.logger.info('Done creating {} decoding layer'.format(self.name))
 
     def get_model_parameters(self):
 

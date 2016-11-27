@@ -1,0 +1,14 @@
+{
+  "model": {
+    "class": "dae",
+    "params": {
+      "corr_type": "gaussian",
+      "corr_param": 0.1
+    },
+  },
+  "data_set": {
+    "train_x": "/home/rafael/Documents/master/project/databases/bike/bike_train_x.csv",
+    "data_x": "/home/rafael/Documents/master/project/databases/bike/bike_test_x.csv",
+    "has_header": true
+  }
+}

@@ -2,7 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import pydl.utils.utilities as utils
 from pydl.models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder
 from pydl.models.autoencoder_models.stacked_autoencoder import StackedAutoencoder
 
@@ -13,8 +12,7 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
     """
 
     def __init__(self,
-                 model_name='sdae',
-                 main_dir='sdae/',
+                 name='sdae',
                  layers=list([64, 32]),
                  enc_act_func=list(['relu']),
                  dec_act_func=list(['linear']),
@@ -32,12 +30,14 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
                  finetune_loss_func='mse',
                  finetune_enc_act_func='relu',
                  finetune_dec_act_func='linear',
+                 finetune_l1_reg=0,
+                 finetune_l2_reg=0,
                  finetune_opt='adam',
                  finetune_learning_rate=0.001,
                  finetune_momentum=0.5,
                  finetune_num_epochs=10,
                  finetune_batch_size=100,
-                 seed=-1,
+                 seed=42,
                  verbose=0):
 
         """
@@ -59,6 +59,8 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
         :param finetune_loss_func: Cost function for the fine tunning step.
         :param finetune_enc_act_func: finetuning step hidden layers activation function.
         :param finetune_dec_act_func: finetuning step output layer activation function.
+        :param finetune_l1_reg:
+        :param finetune_l2_reg:
         :param finetune_opt: optimizer for the finetuning phase
         :param finetune_learning_rate: learning rate for the finetuning.
         :param finetune_momentum: momentum for the finetuning.
@@ -67,8 +69,7 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
                          layers=layers,
                          enc_act_func=enc_act_func,
                          dec_act_func=dec_act_func,
@@ -84,6 +85,8 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
                          finetune_loss_func=finetune_loss_func,
                          finetune_enc_act_func=finetune_enc_act_func,
                          finetune_dec_act_func=finetune_dec_act_func,
+                         finetune_l1_reg=finetune_l1_reg,
+                         finetune_l2_reg=finetune_l2_reg,
                          finetune_opt=finetune_opt,
                          finetune_learning_rate=finetune_learning_rate,
                          finetune_momentum=finetune_momentum,
@@ -92,31 +95,15 @@ class StackedDenoisingAutoencoder(StackedAutoencoder):
                          seed=seed,
                          verbose=verbose)
 
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
         # Denoising Autoencoder parameters
-        self.ae_args['corr_type'] = corr_type
-        self.ae_args['corr_param'] = corr_param
-
-        self.ae_args = utils.expand_args(self.ae_args)
+        self.ae_type = DenoisingAutoencoder
+        self.corr_type = corr_type
+        self.corr_param = corr_param
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def _get_autoencoder(self, n):
-
-        return DenoisingAutoencoder(model_name='{}_dae_{}'.format(self.model_name, n),
-                                    main_dir=self.main_dir,
-                                    n_hidden=self.ae_args['layers'][n],
-                                    enc_act_func=self.ae_args['enc_act_func'][n],
-                                    dec_act_func=self.ae_args['dec_act_func'][n],
-                                    l1_reg=self.ae_args['l1_reg'][n],
-                                    l2_reg=self.ae_args['l2_reg'][n],
-                                    loss_func=self.ae_args['loss_func'][n],
-                                    num_epochs=self.ae_args['num_epochs'][n],
-                                    batch_size=self.ae_args['batch_size'][n],
-                                    opt=self.ae_args['opt'][n],
-                                    learning_rate=self.ae_args['learning_rate'][n],
-                                    momentum=self.ae_args['momentum'][n],
-                                    corr_type=self.ae_args['corr_type'][n],
-                                    corr_param=self.ae_args['corr_param'][n],
-                                    verbose=self.verbose)
+    def _get_ae_args(self):
+        ae_args = super()._get_ae_args()
+        ae_args['corr_type'] = self.corr_type
+        ae_args['corr_param'] = self.corr_param
+        return ae_args

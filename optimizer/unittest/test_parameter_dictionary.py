@@ -1,4 +1,5 @@
 import unittest
+
 from optimizer.parameter_dictionary import IntegerParameter, RealParameter, ListParameter, ParameterDictionary
 
 

@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import keras.models as kmodels
 from keras.layers import Input
+
 from pydl.models.base.model import Model
 
 
@@ -13,8 +14,7 @@ class UnsupervisedModel(Model):
     """
 
     def __init__(self,
-                 model_name,
-                 main_dir,
+                 name,
                  loss_func='mse',
                  l1_reg=0.0,
                  l2_reg=0.0,
@@ -23,11 +23,10 @@ class UnsupervisedModel(Model):
                  opt='adam',
                  learning_rate=0.001,
                  momentum=0.5,
-                 seed=-1,
+                 seed=42,
                  verbose=0):
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
                          loss_func=loss_func,
                          l1_reg=l1_reg,
                          l2_reg=l2_reg,
@@ -42,7 +41,6 @@ class UnsupervisedModel(Model):
         # Model input data
         self._input = None
 
-        self._encode_layer = None
         self._decode_layer = None
 
         self._encoder = None
@@ -55,20 +53,23 @@ class UnsupervisedModel(Model):
         :return: self
         """
 
-        self.logger.info('Building {} model'.format(self.model_name))
+        self.logger.info('Building {} model'.format(self.name))
 
         self._input = Input(shape=(n_input,), name='x-input')
 
-        self._create_layers(n_input)
-
+        self._create_layers(self._input)
         self._model = kmodels.Model(input=self._input, output=self._decode_layer)
 
         self._create_encoder_model()
         self._create_decoder_model()
 
-        self._model.compile(optimizer=self.opt, loss=self.loss_func)
+        opt = self.get_optimizer(opt_func=self.opt_func,
+                                 learning_rate=self.learning_rate,
+                                 momentum=self.momentum)
 
-        self.logger.info('Done building {} model'.format(self.model_name))
+        self._model.compile(optimizer=opt, loss=self.loss_func)
+
+        self.logger.info('Done building {} model'.format(self.name))
 
     def _create_layers(self, n_input):
         pass
@@ -87,7 +88,7 @@ class UnsupervisedModel(Model):
         :return:
         """
 
-        self.logger.info('Starting {} unsupervised training...'.format(self.model_name))
+        self.logger.info('Starting {} unsupervised training...'.format(self.name))
 
         self.build_model(x_train.shape[1])
 
@@ -99,7 +100,7 @@ class UnsupervisedModel(Model):
                         validation_data=(x_valid, x_valid) if x_valid else None,
                         verbose=self.verbose)
 
-        self.logger.info('Done {} unsupervised training...'.format(self.model_name))
+        self.logger.info('Done {} unsupervised training...'.format(self.name))
 
     def transform(self, data):
 
@@ -144,3 +145,8 @@ class UnsupervisedModel(Model):
         if type(loss) is list:
             return loss[0]
         return loss
+
+    def load_model(self, model_path):
+        super().load_model(model_path)
+        self._create_encoder_model()
+        self._create_decoder_model()

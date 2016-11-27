@@ -2,9 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import pydl.utils.utilities as utils
 from keras.layers import Dense, Dropout
 from keras.regularizers import l1l2
+
 from pydl.models.base.supervised_model import SupervisedModel
 
 
@@ -14,8 +14,7 @@ class MLP(SupervisedModel):
     """
 
     def __init__(self,
-                 model_name='mlp',
-                 main_dir='mlp/',
+                 name='mlp',
                  layers=list([128, 64, 32]),
                  enc_act_func='relu',
                  dec_act_func='linear',
@@ -32,8 +31,7 @@ class MLP(SupervisedModel):
                  seed=42):
 
         """
-        :param model_name: Name of the model.
-        :param main_dir: Directory to save the model data.
+        :param name: Name of the model.
         :param layers: Number of hidden units in each layer.
         :param enc_act_func: Activation function for the hidden layers.
         :param dec_act_func: Activation function for the output layer.
@@ -50,11 +48,14 @@ class MLP(SupervisedModel):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        super().__init__(name=name,
+                         layers=layers,
+                         enc_act_func=enc_act_func,
+                         dec_act_func=dec_act_func,
                          loss_func=loss_func,
                          l1_reg=l1_reg,
                          l2_reg=l2_reg,
+                         dropout=dropout,
                          num_epochs=num_epochs,
                          batch_size=batch_size,
                          opt=opt,
@@ -62,20 +63,6 @@ class MLP(SupervisedModel):
                          momentum=momentum,
                          seed=seed,
                          verbose=verbose)
-
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert len(layers) > 0
-        assert all([l > 0 for l in layers])
-        assert enc_act_func in utils.valid_act_functions
-        assert dec_act_func in utils.valid_act_functions
-        assert 0 <= dropout <= 1.0
-
-        self.layers = layers
-        self.enc_act_func = enc_act_func
-        self.dec_act_func = dec_act_func
-        self.dropout = dropout
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 

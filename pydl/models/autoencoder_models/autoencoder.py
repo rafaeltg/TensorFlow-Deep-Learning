@@ -2,10 +2,12 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import keras.backend as K
 import keras.models as kmodels
-import pydl.utils.utilities as utils
 from keras.layers import Input, Dense
 from keras.regularizers import l1l2
+
+import pydl.utils.utilities as utils
 from pydl.models.base.unsupervised_model import UnsupervisedModel
 
 
@@ -15,8 +17,7 @@ class Autoencoder(UnsupervisedModel):
     """
 
     def __init__(self,
-                 model_name='ae',
-                 main_dir='ae/',
+                 name='ae',
                  n_hidden=32,
                  enc_act_func='relu',
                  dec_act_func='linear',
@@ -47,8 +48,11 @@ class Autoencoder(UnsupervisedModel):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        self.n_hidden = n_hidden
+        self.enc_act_func = enc_act_func
+        self.dec_act_func = dec_act_func
+
+        super().__init__(name=name,
                          loss_func=loss_func,
                          l1_reg=l1_reg,
                          l2_reg=l2_reg,
@@ -60,35 +64,31 @@ class Autoencoder(UnsupervisedModel):
                          seed=seed,
                          verbose=verbose)
 
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert n_hidden > 0
-        assert enc_act_func in utils.valid_act_functions
-        assert dec_act_func in utils.valid_act_functions
-
-        self.n_hidden = n_hidden
-        self.enc_act_func = enc_act_func
-        self.dec_act_func = dec_act_func
-
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
-    def _create_layers(self, n_inputs):
+    def validate_params(self):
+        super().validate_params()
+        assert self.n_hidden > 0
+        assert self.enc_act_func in utils.valid_act_functions
+        assert self.dec_act_func in utils.valid_act_functions
+
+    def _create_layers(self, input_layer):
 
         """ Create the encoding and the decoding layers of the autoencoder.
-        :param n_inputs: Input size
+        :param input_layer:
         :return: self
         """
 
-        self.logger.info('Creating {} layers'.format(self.model_name))
+        self.logger.info('Creating {} layers'.format(self.name))
 
-        self._encode_layer = Dense(output_dim=self.n_hidden,
-                                   activation=self.enc_act_func,
-                                   W_regularizer=l1l2(self.l1_reg, self.l2_reg),
-                                   b_regularizer=l1l2(self.l1_reg, self.l2_reg))(self._input)
+        encode_layer = Dense(output_dim=self.n_hidden,
+                             activation=self.enc_act_func,
+                             W_regularizer=l1l2(self.l1_reg, self.l2_reg),
+                             b_regularizer=l1l2(self.l1_reg, self.l2_reg))(self._input)
 
+        n_inputs = K.int_shape(input_layer)[1]
         self._decode_layer = Dense(output_dim=n_inputs,
-                                   activation=self.dec_act_func)(self._encode_layer)
+                                   activation=self.dec_act_func)(encode_layer)
 
     def _create_encoder_model(self):
 
@@ -96,11 +96,12 @@ class Autoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} encoder model'.format(self.model_name))
+        self.logger.info('Creating {} encoder model'.format(self.name))
 
-        self._encoder = kmodels.Model(input=self._input, output=self._encode_layer)
+        self._encoder = kmodels.Model(input=self._model.layers[0].inbound_nodes[0].output_tensors,
+                                      output=self._model.layers[1].outbound_nodes[0].output_tensors)
 
-        self.logger.info('Done creating {} encoder model'.format(self.model_name))
+        self.logger.info('Done creating {} encoder model'.format(self.name))
 
     def _create_decoder_model(self):
 
@@ -108,16 +109,17 @@ class Autoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} decoder model'.format(self.model_name))
+        self.logger.info('Creating {} decoder model'.format(self.name))
 
-        self._encoded_input = Input(shape=(self.n_hidden,))
+        encoded_input = Input(shape=(self.n_hidden,))
 
         # retrieve the last layer of the autoencoder model
         decoder_layer = self._model.layers[-1]
 
-        self._decoder = kmodels.Model(input=self._encoded_input, output=decoder_layer(self._encoded_input))
+        self._decoder = kmodels.Model(input=encoded_input,
+                                      output=decoder_layer(encoded_input))
 
-        self.logger.info('Done creating {} decoding layer'.format(self.model_name))
+        self.logger.info('Done creating {} decoding layer'.format(self.name))
 
     def get_model_parameters(self):
 

@@ -3,8 +3,8 @@ from __future__ import division
 from __future__ import print_function
 
 import numpy as np
-import pydl.utils.utilities as utils
 from keras.layers import Dense, Dropout, LSTM, GRU, SimpleRNN
+
 from pydl.models.base.supervised_model import SupervisedModel
 
 
@@ -14,8 +14,7 @@ class RNN(SupervisedModel):
     """
 
     def __init__(self,
-                 model_name='rnn',
-                 main_dir='rnn/',
+                 name='rnn',
                  cell_type='lstm',
                  layers=list([50, 50]),
                  stateful=True,
@@ -32,8 +31,7 @@ class RNN(SupervisedModel):
                  seed=42):
 
         """
-        :param model_name: Name of the model.
-        :param main_dir: Directory to save the model data.
+        :param name: Name of the model.
         :param cell_type: Recurrent layers type. ["lstm", "gru", "simple"]
         :param layers: Number of hidden units in each layer.
         :param stateful: Whether the recurrent network is stateful or not.It means that the states
@@ -52,9 +50,15 @@ class RNN(SupervisedModel):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        self.cell_type = cell_type
+        self.stateful = stateful
+
+        super().__init__(name=name,
+                         layers=layers,
+                         enc_act_func=enc_act_func,
+                         dec_act_func=dec_act_func,
                          loss_func=loss_func,
+                         dropout=dropout,
                          num_epochs=num_epochs,
                          batch_size=batch_size,
                          opt=opt,
@@ -63,30 +67,11 @@ class RNN(SupervisedModel):
                          seed=seed,
                          verbose=verbose)
 
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert cell_type in ["lstm", "gru", "simple"], 'Invalid cell type!'
-        assert len(layers) > 0
-        assert all([l > 0 for l in layers])
-        assert enc_act_func in utils.valid_act_functions
-        assert dec_act_func in utils.valid_act_functions
-        assert 0 <= dropout <= 1.0
-
-        if cell_type == 'lstm':
-            self.cell = LSTM
-        elif cell_type == 'gru':
-            self.cell = GRU
-        else:
-            self.cell = SimpleRNN
-
-        self.stateful = stateful
-        self.layers = layers
-        self.enc_act_func = enc_act_func
-        self.dec_act_func = dec_act_func
-        self.dropout = dropout
-
         self.logger.info('Done {} __init__'.format(__class__.__name__))
+
+    def validate_params(self):
+        super().validate_params()
+        assert self.cell_type in ["lstm", "gru", "simple"], 'Invalid cell type!'
 
     def _create_layers(self, input_shape, n_output):
 
@@ -97,17 +82,24 @@ class RNN(SupervisedModel):
 
         b_size = self.batch_size if self.stateful else None
 
+        if self.cell_type == 'lstm':
+            cell = LSTM
+        elif self.cell_type == 'gru':
+            cell = GRU
+        else:
+            cell = SimpleRNN
+
         # Hidden layers
         for i, l in enumerate(self.layers):
 
             self._model.add(Dropout(p=self.dropout,
                                     batch_input_shape=(b_size, input_shape[1], input_shape[2]) if i == 0 else [None]))
 
-            self._model.add(self.cell(output_dim=l,
-                                      batch_input_shape=(b_size, input_shape[1], input_shape[2]),
-                                      activation=self.enc_act_func,
-                                      stateful=self.stateful,
-                                      return_sequences=True if i < (len(self.layers)-1) else False))
+            self._model.add(cell(output_dim=l,
+                                 batch_input_shape=(b_size, input_shape[1], input_shape[2]),
+                                 activation=self.enc_act_func,
+                                 stateful=self.stateful,
+                                 return_sequences=True if i < (len(self.layers)-1) else False))
 
         # Output layer
         self._model.add(Dropout(p=self.dropout))

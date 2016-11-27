@@ -3,10 +3,11 @@ from __future__ import division
 from __future__ import print_function
 
 import keras.models as kmodels
-import pydl.utils.utilities as utils
 from keras import backend as K
 from keras import objectives
 from keras.layers import Input, Dense, Lambda
+
+import pydl.utils.utilities as utils
 from pydl.models.base.unsupervised_model import UnsupervisedModel
 
 
@@ -16,8 +17,7 @@ class VariationalAutoencoder(UnsupervisedModel):
     """
 
     def __init__(self,
-                 model_name='vae',
-                 main_dir='vae/',
+                 name='vae',
                  n_latent=10,
                  n_hidden=64,
                  enc_act_func='relu',
@@ -44,8 +44,12 @@ class VariationalAutoencoder(UnsupervisedModel):
         :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
-        super().__init__(model_name=model_name,
-                         main_dir=main_dir,
+        self.n_latent = n_latent
+        self.n_hidden = n_hidden
+        self.enc_act_func = enc_act_func
+        self.dec_act_func = dec_act_func
+
+        super().__init__(name=name,
                          loss_func='custom',
                          num_epochs=num_epochs,
                          batch_size=batch_size,
@@ -55,19 +59,6 @@ class VariationalAutoencoder(UnsupervisedModel):
                          seed=seed,
                          verbose=verbose)
 
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert n_latent > 0
-        # assert all([l > 0 for l in n_hidden])
-        assert enc_act_func in utils.valid_act_functions
-        assert dec_act_func in utils.valid_act_functions
-
-        self.n_latent = n_latent
-        self.n_hidden = n_hidden
-        self.enc_act_func = enc_act_func
-        self.dec_act_func = dec_act_func
-
         self.z_mean = None
         self.z_log_var = None
 
@@ -76,13 +67,20 @@ class VariationalAutoencoder(UnsupervisedModel):
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
+    def validate_params(self):
+        super().validate_params()
+        assert self.n_latent > 0
+        assert self.n_hidden > 0
+        assert self.enc_act_func in utils.valid_act_functions
+        assert self.dec_act_func in utils.valid_act_functions
+
     def _create_layers(self, n_inputs):
 
         """ Create the encoding and the decoding layers of the variational autoencoder.
         :return: self
         """
 
-        self.logger.info('Creating {} layers'.format(self.model_name))
+        self.logger.info('Creating {} layers'.format(self.name))
 
         self.n_inputs = n_inputs
 
@@ -107,12 +105,12 @@ class VariationalAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} encoder model'.format(self.model_name))
+        self.logger.info('Creating {} encoder model'.format(self.name))
 
         # This model maps an input to its encoded representation
         self._encoder = kmodels.Model(input=self._input, output=self.z_mean)
 
-        self.logger.info('Done creating {} encoder model'.format(self.model_name))
+        self.logger.info('Done creating {} encoder model'.format(self.name))
 
     def _create_decoder_model(self):
 
@@ -120,7 +118,7 @@ class VariationalAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.logger.info('Creating {} decoder model'.format(self.model_name))
+        self.logger.info('Creating {} decoder model'.format(self.name))
 
         encoded_input = Input(shape=(self.n_latent,))
 
@@ -130,7 +128,7 @@ class VariationalAutoencoder(UnsupervisedModel):
         # create the decoder model
         self._decoder = kmodels.Model(input=encoded_input, output=decoder_layer)
 
-        self.logger.info('Done creating {} decoding layer'.format(self.model_name))
+        self.logger.info('Done creating {} decoding layer'.format(self.name))
 
     def _sampling(self, args):
         z_mean, z_log_var = args
