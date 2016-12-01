@@ -1,4 +1,4 @@
-from __future__ import absolute_import
++from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -42,6 +42,9 @@ class ParameterDictionary(object):
                 i += 1
 
         return ret_params
+
+    def from_json(self, dic):
+        pass
 
 
 class BaseParameter(object):

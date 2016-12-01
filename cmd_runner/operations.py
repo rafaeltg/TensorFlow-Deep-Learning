@@ -14,6 +14,7 @@ from pydl.models.nnet_models.rnn import RNN
 from pydl.utils import datasets
 from validator.cv_metrics import available_metrics
 from validator.model_validator import ModelValidator
+from optimizer.parameter_dictionary import ParameterDictionary
 
 
 def fit(config):
@@ -154,7 +155,22 @@ def validate(config):
 
 
 def optimize(config):
+    """
+    :param config:
+    :return:
+    """
     print('optimize', config)
+
+    m = load_model(config)
+
+    data_set = get_input_data(config)
+    x = load_data(data_set, 'data_x')
+    y = load_data(data_set, 'data_y')
+
+    assert 'params' in config, "Missing List of parameters to optimize"
+    params = ParameterDictionary()
+    params.from_json(config['params'])
+
 
 
 #
