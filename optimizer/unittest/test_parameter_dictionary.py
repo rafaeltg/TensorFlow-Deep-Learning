@@ -75,5 +75,39 @@ class ParameterDictionaryTestCase(unittest.TestCase):
         self.assertTrue(isinstance(p_ret['test_list'], list))
         self.assertListEqual(p_ret['test_list'], [10, 5])
 
+    def test_get_param(self):
+        self.assertRaises(AssertionError, ParameterDictionary.get_param, 1)
+        self.assertRaises(AssertionError, ParameterDictionary.get_param, {"min_value": 0})
+        self.assertRaises(SyntaxError, ParameterDictionary.get_param, {"type": "a"})
+
+        self.assertEqual(ParameterDictionary.get_param({"type": "int", "min_value": 10, "max_value": 100}),
+                         IntegerParameter(min_value=10, max_value=100))
+
+        self.assertEqual(ParameterDictionary.get_param({"type": "real", "min_value": 0.1, "max_value": 0.9}),
+                         RealParameter(min_value=0.1, max_value=0.9))
+
+        self.assertEqual(ParameterDictionary.get_param({"type": "list", "values": [1, 2, 3]}),
+                         ListParameter(values=[1, 2, 3]))
+
+    def test_from_json(self):
+        json = {
+            "a": {"type": "int", "min_value": 0, "max_value": 10},
+            "b": [
+                {"type": "real", "min_value": 0.1, "max_value": 0.5}
+            ]
+        }
+
+        d = ParameterDictionary()
+        d.from_json(json)
+
+        expected_dict = ParameterDictionary()
+        expected_dict.add({
+            "a": IntegerParameter(min_value=0, max_value=10),
+            "b": [RealParameter(min_value=0.1, max_value=0.5)]
+        })
+
+        self.assertEqual(expected_dict.__dict__, d.__dict__)
+
+
 if __name__ == '__main__':
     unittest.main()

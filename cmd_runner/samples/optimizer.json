@@ -5,8 +5,8 @@
 
   "params": {
     "layers": [
-      {"type": "int", "min": 10, "max": 100},
-      {"type": "int", "min": 10, "max": 100}
+      {"type": "int", "min_value": 10, "max_value": 100},
+      {"type": "int", "min_value": 10, "max_value": 100}
     ],
     "enc_act_func": {"type": "list", "values": ["relu", "tanh"]}
   },

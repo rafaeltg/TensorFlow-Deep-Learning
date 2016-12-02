@@ -1,4 +1,4 @@
-+from __future__ import absolute_import
+from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
@@ -18,10 +18,10 @@ class ParameterDictionary(object):
             if isinstance(v, BaseParameter):
                 self.size += 1
             elif isinstance(v, list):
-                assert all([isinstance(p, BaseParameter) for p in v]), ''
+                assert all([isinstance(p, BaseParameter) for p in v]), "Invalid Parameter type"
                 self.size += len(v)
             else:
-                raise TypeError("Test")
+                raise TypeError("Invalid Parameter type")
 
             self.params[k] = v
 
@@ -43,14 +43,42 @@ class ParameterDictionary(object):
 
         return ret_params
 
-    def from_json(self, dic):
-        pass
+    def from_json(self, params):
+        assert isinstance(params, dict), 'Invalid json input'
+
+        for k, v in params.items():
+            if isinstance(v, list):
+                self.add({k: [self.get_param(p) for p in v]})
+            else:
+                self.add({k: self.get_param(v)})
+
+    @staticmethod
+    def get_param(p):
+        assert isinstance(p, dict), ''
+        assert 'type' in p, 'Missing parameter type'
+
+        if p['type'] == 'int':
+            assert 'min_value' in p, ''
+            assert 'max_value' in p, ''
+            return IntegerParameter(min_value=p['min_value'], max_value=p['max_value'])
+        elif p['type'] == 'real':
+            assert 'min_value' in p, ''
+            assert 'max_value' in p, ''
+            return RealParameter(min_value=p['min_value'], max_value=p['max_value'])
+        elif p['type'] == 'list':
+            assert 'values' in p, ''
+            return ListParameter(values=p['values'])
+        else:
+            raise SyntaxError('Invalid parameter type - %s' % p['type'])
 
 
 class BaseParameter(object):
 
     def get_value(self, idx):
         pass
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 
 class ListParameter(BaseParameter):

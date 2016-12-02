@@ -172,7 +172,6 @@ def optimize(config):
     params.from_json(config['params'])
 
 
-
 #
 # UTILS
 #
