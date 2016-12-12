@@ -11,7 +11,7 @@
     "enc_act_func": {"type": "list", "values": ["relu", "tanh"]}
   },
 
-  "opt":{
+  "opt": {
     "method": "cmaes",
     "params": {
       "pop_size": 10

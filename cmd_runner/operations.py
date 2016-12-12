@@ -14,6 +14,7 @@ from pydl.models.nnet_models.rnn import RNN
 from pydl.utils import datasets
 from validator.cv_metrics import available_metrics
 from validator.model_validator import ModelValidator
+from optimizer.optimizer import CMAESOptimizer
 from optimizer.parameter_dictionary import ParameterDictionary
 
 
@@ -140,14 +141,9 @@ def validate(config):
     y = load_data(data_set, 'data_y')
 
     # Get validation method
-    assert 'cv' in config, 'Missing cross-validation configurations!'
-    cv_config = config['cv']
-    assert 'method' in cv_config, 'Missing cross-validation method!'
-    method = cv_config['method']
-    params = cv_config['params'] if 'params' in cv_config else {}
-    metrics = cv_config['metrics'] if 'metrics' in cv_config else []
+    cv = get_cv(config)
+    metrics = config['cv']['metrics'] if 'metrics' in config['cv'] else []
 
-    cv = ModelValidator(method=method, **params)
     results = cv.run(model=m, x=x, y=y, metrics=metrics)
 
     # Save results into a JSON file
@@ -171,6 +167,18 @@ def optimize(config):
     params = ParameterDictionary()
     params.from_json(config['params'])
 
+    cv = get_cv(config)
+    print(cv)
+
+    fit_fn = available_metrics[config['cv']['metric']]
+
+    opt = get_optimizer(config, cv, fit_fn)
+
+    opt.run(model=m,
+            params_dict=params,
+            x=x,
+            y=y)
+
 
 #
 # UTILS
@@ -185,8 +193,6 @@ def load_model(config):
         m.set_params(**model_config['params'])
     elif 'path' in model_config:
         m.load_model(model_config['path'])
-    else:
-        raise Exception('Missing model configurations!')
 
     return m
 
@@ -214,6 +220,31 @@ def get_model_by_class(model_config):
 def get_input_data(config):
     assert 'data_set' in config, 'Missing data set path!'
     return config['data_set']
+
+
+def get_cv(config):
+    assert 'cv' in config, 'Missing cross-validation configurations!'
+    cv_config = config['cv']
+    assert 'method' in cv_config, 'Missing cross-validation method!'
+    method = cv_config['method']
+    params = cv_config['params'] if 'params' in cv_config else {}
+    return ModelValidator(method=method, **params)
+
+
+def get_optimizer(config, cv, fit_fn):
+    assert 'opt' in config, 'Missing optimizer parameters!'
+    opt_config = config['opt']
+
+    print('>>>> opt_config: {}'.format(opt_config))
+
+    assert 'method' in opt_config, 'Missing optimization method'
+    method = opt_config['method']
+    params = opt_config['params'] if 'params' in opt_config else {}
+
+    if method == 'cmaes':
+        return CMAESOptimizer(cv=cv, fit_fn=fit_fn, *params)
+    else:
+        raise AttributeError('Invalid optimizer method')
 
 
 def load_data(data_set, set_name):
