@@ -14,14 +14,15 @@
   "opt": {
     "method": "cmaes",
     "params": {
-      "pop_size": 10
+      "pop_size": 5,
+      "max_iter": 3
     }
   },
 
   "cv": {
-    "method": "time_series",
+    "method": "split",
     "params": {
-      "n_splits": 3
+      "test_size": 0.3
     },
     "metric": "rmse"
   },

@@ -1,7 +1,7 @@
 {
   "model": {
     "class": "mlp",
-    "path": "/home/rafael/Desktop/models/mlp/"
+    "path": "/home/rafael/Desktop/models/optimize/"
   },
   "metrics": ["rmse", "mape"],
   "data_set": {

@@ -73,6 +73,7 @@ class Model:
         for key, value in params.items():
             if key in valid_params:
                 setattr(self, key, value)
+
         self.validate_params()
 
     def validate_params(self):
@@ -85,6 +86,17 @@ class Model:
         assert self.opt_func in utils.valid_optimization_functions, 'Invalid optimizer'
         assert self.learning_rate > 0, 'Invalid learning rate'
         assert self.momentum > 0 if self.opt_func == 'sgd' else True, 'Invalid momentum rate'
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        del state['logger']
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        logger = getattr(self, 'logger', None)
+        if logger is None:
+            setattr(self, 'logger', Logger(self.name, self.verbose))
 
     def get_model_parameters(self):
         pass

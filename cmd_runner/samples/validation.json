@@ -4,11 +4,14 @@
     "params": {}
   },
   "cv": {
-    "method": "kfold",
+    "method": "time_series",
     "params": {
-      "n_splits": 3
+      "window": 5000,
+      "horizon": 500,
+      "fixed": false,
+      "by": 500
     },
-    "metrics": ["rmse", "mse"]
+    "metrics": ["rmse", "mape"]
   },
   "data_set": {
     "data_x": "/home/rafael/Documents/master/project/databases/bike/bike_train_x.csv",

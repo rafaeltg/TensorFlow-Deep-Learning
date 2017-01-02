@@ -11,6 +11,9 @@ class ParameterDictionary(object):
         self.params = {}
         self.size = 0
 
+    def get_size(self):
+        return self.size
+
     def add(self, param):
         assert isinstance(param, dict), '"param" must be dictionary'
 
@@ -88,7 +91,7 @@ class ListParameter(BaseParameter):
 
     def get_value(self, idx):
         assert 0 <= idx <= 1, 'Parameter "idx" must be greater or equal to zero and less or equal to 1.'
-        return self.values[round(idx * (len(self.values)-1))]
+        return self.values[int(round(idx * (len(self.values)-1)))]
 
 
 class IntegerParameter(BaseParameter):

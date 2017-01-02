@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from math import floor
 
-from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold, ShuffleSplit, TimeSeriesSplit
+from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold, ShuffleSplit
 
 
 class TrainTestSplitCV:
@@ -13,29 +13,36 @@ class TrainTestSplitCV:
         self.test_size = test_size
 
     def split(self, X, y=None):
-        if X is None:
-            raise AttributeError('X cannot be empty!')
+        assert len(X) > 0, 'X cannot be empty!'
 
         n = len(X)
         train_size = floor(n * (1 - self.test_size))
-        yield slice(0, train_size, 1), slice(train_size, n, 1)
+        yield range(0, train_size, 1), range(train_size, n, 1)
 
 
 class TimeSeriesCV:
 
-    def __init__(self, n_splits=1, fixed=False):
-        self.cv = TimeSeriesSplit(n_splits=n_splits)
+    def __init__(self, window, horizon, fixed=True, by=0):
+        self.window = window
+        self.horizon = horizon
         self.fixed = fixed
+        self.by = by + 1
 
     def split(self, X, y=None):
-        if not self.fixed:
-            return self.cv.split(X=X, y=y)
+        assert len(X) > 0, 'X cannot be empty!'
+        assert len(X) >= (self.window+self.horizon), 'window size plus horizon size cannot be greater than X length!'
 
-        prev_fold = []
-        for train, test in self.cv.split(X, y):
-            train_idxs = set(train).difference(set(prev_fold))
-            prev_fold = train
-            yield train_idxs, test
+        starts_test = range(self.window, len(X)-self.horizon+1, self.by)
+
+        if self.fixed:
+            trains = [range(test_start-self.window, test_start) for test_start in starts_test]
+        else:
+            trains = [range(0, test_start) for test_start in starts_test]
+
+        tests = [range(test_start, test_start+self.horizon) for test_start in starts_test]
+
+        for i in range(0, len(trains)):
+            yield trains[i], tests[i]
 
 
 def get_cv_method(method, **kwargs):
