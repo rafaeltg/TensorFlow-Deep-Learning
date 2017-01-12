@@ -99,7 +99,7 @@ class Autoencoder(UnsupervisedModel):
         self.logger.info('Creating {} encoder model'.format(self.name))
 
         self._encoder = kmodels.Model(input=self._model.layers[0].inbound_nodes[0].output_tensors,
-                                      output=self._model.layers[1].outbound_nodes[0].output_tensors)
+                                      output=self._model.layers[1].inbound_nodes[0].output_tensors)
 
         self.logger.info('Done creating {} encoder model'.format(self.name))
 

@@ -101,15 +101,27 @@ class Model:
     def get_model_parameters(self):
         pass
 
-    def save_model(self, model_path):
-        if not os.path.exists(model_path):
-            os.makedirs(model_path)
-        save_model(model=self._model,
-                   filepath=os.path.join(model_path, self.name+'.h5'))
+    def save_model(self, file_path):
+        out_file = file_path
+
+        if not os.path.exists(os.path.dirname(file_path)):
+            os.makedirs(os.path.dirname(file_path))
+
+        file_name = os.path.basename(file_path)
+        if file_name != '':
+            assert file_name.split('.')[1] == 'h5' if '.' in file_name else True, 'Invalid file extension (must be .h5)'
+        else:
+            print('dir')
+            out_file = os.path.join(file_path, self.name+'.h5')
+
+        save_model(model=self._model, filepath=out_file)
 
     def load_model(self, model_path):
-        model_file = os.path.join(model_path, self.name+'.h5')
-        self._model = self.model_from_config(model_file)
+        file_path = model_path
+        if os.path.isdir(model_path):
+            file_path = os.path.join(model_path, self.name+'.h5')
+
+        self._model = self.model_from_config(file_path)
 
     @staticmethod
     def model_from_config(config_file):
