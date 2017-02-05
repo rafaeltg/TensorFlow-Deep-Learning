@@ -47,21 +47,20 @@ def load_model(config=None):
 
     assert len(configs) > 0, 'No configuration specified!'
     assert 'model' in configs, 'Missing model definition!'
-    configs = configs['model']
+    model = configs['model']
 
-    assert 'class' in configs, 'Missing model class!'
-    params = configs['params'] if 'params' in configs else {}
+    assert 'class_name' in model, 'Missing model class!'
+    config = model['config'] if 'config' in model else {}
 
-    m = build_model(configs['class'], params)
+    m = build_model(model['class_name'], config)
 
     if 'weights' in configs:
-
         m.load_weights(configs['weights'])
 
     return m
 
 
-def build_model(m, params):
+def build_model(m, config):
     import importlib
     import pkgutil
 
@@ -74,7 +73,7 @@ def build_model(m, params):
             class_module = importlib.import_module(class_mod, 'pydl')
             if hasattr(class_module, m):
                 c = getattr(class_module, m)
-                return c(**params)
+                return c.from_config(config)
 
     raise Exception('Invalid model!')
 

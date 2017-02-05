@@ -6,6 +6,9 @@ from keras.models import Sequential
 
 import pydl.utils.utilities as utils
 from pydl.models.base.model import Model
+from keras.utils.layer_utils import layer_from_config
+from keras.layers import Dense
+from keras.regularizers import l1l2
 
 
 class SupervisedModel(Model):
@@ -16,11 +19,9 @@ class SupervisedModel(Model):
     def __init__(self,
                  name,
                  layers,
-                 enc_act_func='relu',
                  dec_act_func='linear',
                  l1_reg=0.0,
                  l2_reg=0.0,
-                 dropout=0.4,
                  loss_func='mse',
                  num_epochs=10,
                  batch_size=100,
@@ -31,9 +32,7 @@ class SupervisedModel(Model):
                  seed=42):
 
         self.layers = layers
-        self.enc_act_func = enc_act_func
         self.dec_act_func = dec_act_func
-        self.dropout = dropout
 
         super().__init__(name=name,
                          loss_func=loss_func,
@@ -50,11 +49,7 @@ class SupervisedModel(Model):
     def validate_params(self):
         super().validate_params()
         assert len(self.layers) > 0, 'Model must have at least one hidden layer'
-        assert all([l > 0 for l in self.layers]), 'Invalid hidden layer size'
-        assert self.enc_act_func in utils.valid_act_functions, 'Invalid hidden layer activation function'
         assert self.dec_act_func in utils.valid_act_functions, 'Invalid decoder layer activation function'
-        dropout = self.dropout if isinstance(self.dropout, list) else [self.dropout]
-        assert all([0 <= d < 1 for d in dropout]), 'Invalid dropout rate'
 
     def build_model(self, input_shape, n_output=1):
 
@@ -66,9 +61,9 @@ class SupervisedModel(Model):
 
         self.logger.info('Building {} model'.format(self.name))
 
-        self._model = Sequential()
-
         self._create_layers(input_shape, n_output)
+
+        self._model = Sequential(layers=self.layers, name=self.name)
 
         opt = self.get_optimizer(opt_func=self.opt,
                                  learning_rate=self.learning_rate,
@@ -79,7 +74,15 @@ class SupervisedModel(Model):
         self.logger.info('Done building {} model'.format(self.name))
 
     def _create_layers(self, input_shape, n_output):
-        pass
+
+        if not hasattr(self.layers[0], 'batch_input_shape'):
+            self.layers[0].create_input_layer(input_shape[1:])
+
+        # Add the output layer
+        self.layers.append(Dense(output_dim=n_output,
+                                 activation=self.dec_act_func,
+                                 W_regularizer=l1l2(self.l1_reg, self.l2_reg),
+                                 b_regularizer=l1l2(self.l1_reg, self.l2_reg)))
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):
 
@@ -152,3 +155,23 @@ class SupervisedModel(Model):
         """
 
         return self._model.get_weights()
+
+    def get_config(self):
+        conf = super().get_config()
+        conf['dec_act_func'] = self.dec_act_func
+        layers = []
+        for l in self.layers:
+            layers.append({
+                'class_name': l.__class__.__name__,
+                'config': l.get_config(),
+            })
+        conf['layers'] = layers
+        return conf
+
+    @classmethod
+    def from_config(cls, config):
+        layers = []
+        for l in config['layers']:
+            layers.append(layer_from_config(l))
+        config['layers'] = layers
+        return cls(**config)

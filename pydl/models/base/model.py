@@ -21,7 +21,7 @@ class Model:
     """
 
     def __init__(self,
-                 name,
+                 name='',
                  loss_func='mse',
                  l1_reg=0.0,
                  l2_reg=0.0,
@@ -79,7 +79,6 @@ class Model:
         self.validate_params()
 
     def validate_params(self):
-        assert self.name is not '', 'Invalid model name'
         assert self.num_epochs > 0, 'Invalid number of training epochs'
         assert self.batch_size > 0, 'Invalid batch size'
         assert self.loss_func in utils.valid_loss_functions if isinstance(self.loss_func, str) else True, 'Invalid loss function'
@@ -113,15 +112,22 @@ class Model:
             file_name = self.name
 
         w_file = os.path.join(path, file_name + '.h5')
-        configs = {'model': {
-            'class': self.__class__.__name__,
-            'params': self._dump_params(),
-            'weights': w_file
-        }}
+        configs = {
+            'model': {
+                'class_name': self.__class__.__name__,
+                'config': self.get_config()
+            },
+            'weights': w_file,
+        }
+
         utils.save_json(configs, os.path.join(path, file_name + '.json'))
         save_model(model=self._model, filepath=w_file)
 
-    def _dump_params(self):
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
+    def get_config(self):
         p = self.__getstate__()
         return {k: p[k] for k in self.get_func_params(self.__init__).keys()}
 
