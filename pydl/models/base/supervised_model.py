@@ -18,7 +18,7 @@ class SupervisedModel(Model):
 
     def __init__(self,
                  name,
-                 layers,
+                 layers=None,
                  dec_act_func='linear',
                  l1_reg=0.0,
                  l2_reg=0.0,
@@ -65,6 +65,8 @@ class SupervisedModel(Model):
 
         self._model = Sequential(layers=self.layers, name=self.name)
 
+        self._model.summary()
+        
         opt = self.get_optimizer(opt_func=self.opt,
                                  learning_rate=self.learning_rate,
                                  momentum=self.momentum)

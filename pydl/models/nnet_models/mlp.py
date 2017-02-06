@@ -2,9 +2,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from keras.layers import Dense
-from keras.regularizers import l1l2
-
 from pydl.models.base.supervised_model import SupervisedModel
 
 
