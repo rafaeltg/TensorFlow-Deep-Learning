@@ -8,8 +8,8 @@ from keras import objectives
 from keras.layers import Input, Dense, Lambda
 from keras.models import load_model
 
-import pydl.utils.utilities as utils
-from pydl.models.base.unsupervised_model import UnsupervisedModel
+from pydl.utils.utilities import valid_act_functions
+from ..base import UnsupervisedModel
 
 
 class VariationalAutoencoder(UnsupervisedModel):
@@ -68,8 +68,8 @@ class VariationalAutoencoder(UnsupervisedModel):
         super().validate_params()
         assert self.n_latent > 0
         assert self.n_hidden > 0
-        assert self.enc_act_func in utils.valid_act_functions
-        assert self.dec_act_func in utils.valid_act_functions
+        assert self.enc_act_func in valid_act_functions
+        assert self.dec_act_func in valid_act_functions
 
     def _create_layers(self, input_layer):
 
@@ -135,7 +135,6 @@ class VariationalAutoencoder(UnsupervisedModel):
         return z_mean + K.exp(z_log_var / 2) * epsilon
 
     def _vae_loss(self, x, x_decoded_mean):
-        print('los')
         z_mean = self._model.get_layer('z_mean').inbound_nodes[0].output_tensors[0]
         z_log_var = self._model.get_layer('z_log_var').inbound_nodes[0].output_tensors[0]
 
@@ -153,13 +152,10 @@ class VariationalAutoencoder(UnsupervisedModel):
 
         params = {
             'enc': self._encoder.get_weights(),
-            'dec': self._decoder.get_weights()
+            #'dec': self._decoder.get_weights()
         }
 
         return params
 
     def _load_model(self, config_file):
-        print("LOAD")
         self._model = load_model(filepath=config_file, custom_objects={'_vae_loss': self._vae_loss})
-        print("LOADED")
-        self._model.summary()

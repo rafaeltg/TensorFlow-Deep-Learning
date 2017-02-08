@@ -6,7 +6,7 @@ import keras.backend as K
 import keras.models as kmodels
 from keras.layers import Input, LSTM, RepeatVector
 
-from pydl.models.autoencoder_models.autoencoder import Autoencoder
+from .autoencoder import Autoencoder
 
 
 class SeqToSeqAutoencoder(Autoencoder):

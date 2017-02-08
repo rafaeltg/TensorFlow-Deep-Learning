@@ -7,8 +7,8 @@ import keras.models as kmodels
 from keras.layers import Input, Dense
 from keras.regularizers import l1l2
 
-import pydl.utils.utilities as utils
-from pydl.models.base.unsupervised_model import UnsupervisedModel
+from pydl.utils.utilities import valid_act_functions
+from ..base import UnsupervisedModel
 
 
 class DeepAutoencoder(UnsupervisedModel):
@@ -65,8 +65,8 @@ class DeepAutoencoder(UnsupervisedModel):
         # Validations
         assert len(n_hidden) > 0
         assert all([l > 0 for l in n_hidden])
-        assert enc_act_func in utils.valid_act_functions
-        assert dec_act_func in utils.valid_act_functions
+        assert enc_act_func in valid_act_functions
+        assert dec_act_func in valid_act_functions
 
         self.n_hidden = n_hidden
         self.enc_act_func = enc_act_func

@@ -95,9 +95,7 @@ class Model:
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        logger = getattr(self, 'logger', None)
-        if logger is None:
-            setattr(self, 'logger', Logger(self.name, self.verbose))
+        setattr(self, 'logger', Logger(self.name, self.verbose))
 
     def get_model_parameters(self):
         pass
@@ -171,3 +169,8 @@ class Model:
         if 'self' in p:
             del p['self']
         return p
+
+    def copy(self):
+        c = self.__new__(self.__class__)
+        c.__setstate__(self.__dict__.copy())
+        return c

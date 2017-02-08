@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
-from pydl.models.nnet_models.rnn import RNN
+from pydl.models import RNN
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
 from keras.layers import LSTM, Dropout

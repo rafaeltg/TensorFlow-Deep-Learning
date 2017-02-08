@@ -7,8 +7,8 @@ import keras.models as kmodels
 from keras.layers import Input, Dense
 from keras.regularizers import l1l2
 
-import pydl.utils.utilities as utils
-from pydl.models.base.unsupervised_model import UnsupervisedModel
+from pydl.utils.utilities import valid_act_functions
+from ..base import UnsupervisedModel
 
 
 class Autoencoder(UnsupervisedModel):
@@ -69,8 +69,8 @@ class Autoencoder(UnsupervisedModel):
     def validate_params(self):
         super().validate_params()
         assert self.n_hidden > 0
-        assert self.enc_act_func in utils.valid_act_functions
-        assert self.dec_act_func in utils.valid_act_functions
+        assert self.enc_act_func in valid_act_functions
+        assert self.dec_act_func in valid_act_functions
 
     def _create_layers(self, input_layer):
 

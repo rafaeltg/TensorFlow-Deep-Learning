@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from pydl.models.autoencoder_models.deep_autoencoder import DeepAutoencoder
+from pydl.models import DeepAutoencoder
 from pydl.utils.utilities import load_model
 
 

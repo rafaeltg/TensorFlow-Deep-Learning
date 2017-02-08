@@ -3,8 +3,10 @@ import json
 from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
-from pydl.models.nnet_models.mlp import MLP
+from pydl.models import MLP
 from pydl.validator.model_validator import ModelValidator
+
+from keras.layers import Dense, Dropout
 
 
 def run_cv():
@@ -22,9 +24,16 @@ def run_cv():
 
     print('Creating MLP')
     mlp = MLP(
-        layers=[32, 16],
-        dropout=0,
-        num_epochs=200
+        layers=[
+            Dense(input_shape=[10],
+                  output_dim=32,
+                  activation='relu'),
+            Dropout(p=0.1),
+            Dense(output_dim=16,
+                  activation='relu'),
+            Dropout(p=0.1)
+        ],
+        num_epochs=100,
     )
 
     print('Creating TrainTestSplitCV method')

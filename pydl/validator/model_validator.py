@@ -46,7 +46,7 @@ class ModelValidator(object):
 
             cv_fn = self._supervised_cv
             for train, test in self.cv.split(x, y):
-                args.append((model,
+                args.append((model.copy(),
                              x[train],
                              y[train],
                              x[test],

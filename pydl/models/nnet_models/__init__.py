@@ -1,1 +1,2 @@
-__all__ = ["mlp", "rnn"]
+from .mlp import MLP
+from .rnn import RNN

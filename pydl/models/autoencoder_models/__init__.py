@@ -1,7 +1,6 @@
-__all__ = ["autoencoder",
-           "denoising_autoencoder",
-           "deep_autoencoder",
-           "stacked_autoencoder",
-           "stacked_denoising_autoencoder",
-           "variational_autoencoder",
-           "seq_to_seq_autoencoder"]
+from .autoencoder import Autoencoder
+from .denoising_autoencoder import DenoisingAutoencoder
+from .deep_autoencoder import DeepAutoencoder
+from .seq_to_seq_autoencoder import SeqToSeqAutoencoder
+from .stacked_autoencoder import StackedAutoencoder
+from .variational_autoencoder import VariationalAutoencoder

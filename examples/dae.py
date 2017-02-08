@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from pydl.models.autoencoder_models.denoising_autoencoder import DenoisingAutoencoder
+from pydl.models import DenoisingAutoencoder
 from pydl.utils.utilities import load_model
 
 

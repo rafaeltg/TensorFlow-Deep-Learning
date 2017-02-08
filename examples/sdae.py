@@ -4,7 +4,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
-from pydl.models.autoencoder_models.stacked_denoising_autoencoder import StackedDenoisingAutoencoder
+from pydl.models import StackedAutoencoder, DenoisingAutoencoder
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
 
@@ -30,10 +30,17 @@ def run_sdae():
     x_test, y_test = create_dataset(test, look_back)
 
     print('Creating Stacked Denoising Autoencoder')
-    sdae = StackedDenoisingAutoencoder(
-        layers=[32, 16],
-        ae_num_epochs=[200],
-        ae_corr_type=['masking']
+    sdae = StackedAutoencoder(
+        layers=[
+            DenoisingAutoencoder(n_hidden=32,
+                                 enc_act_func='relu',
+                                 corr_type='masking',
+                                 corr_param=0.1),
+            DenoisingAutoencoder(n_hidden=16,
+                                 enc_act_func='relu',
+                                 corr_type='masking',
+                                 corr_param=0.1)
+        ],
     )
 
     print('Training')

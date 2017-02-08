@@ -1,7 +1,7 @@
 import os
 import json
+import importlib
 import numpy as np
-
 
 valid_act_functions = ['softmax', 'softplus', 'sigmoid', 'tanh', 'relu', 'linear']
 
@@ -47,12 +47,10 @@ def load_model(config=None):
 
     assert len(configs) > 0, 'No configuration specified!'
     assert 'model' in configs, 'Missing model definition!'
-    model = configs['model']
 
-    assert 'class_name' in model, 'Missing model class!'
-    config = model['config'] if 'config' in model else {}
-
-    m = build_model(model['class_name'], config)
+    m = model_from_config(configs['model'])
+    if m is None:
+        raise Exception('Invalid model!')
 
     if 'weights' in configs:
         m.load_weights(configs['weights'])
@@ -60,22 +58,17 @@ def load_model(config=None):
     return m
 
 
-def build_model(m, config):
-    import importlib
-    import pkgutil
+def model_from_config(config):
+    assert 'class_name' in config, 'Missing model class!'
+    class_name = config['class_name']
+    model_config = config['config'] if 'config' in config else {}
 
-    for model_module in ['autoencoder_models', 'nnet_models']:
-        mod = '.models.' + model_module
-        module = importlib.import_module(mod, 'pydl')
-        pkgpath = os.path.dirname(module.__file__)
-        for _, name, _ in pkgutil.iter_modules([pkgpath]):
-            class_mod = mod + '.' + name
-            class_module = importlib.import_module(class_mod, 'pydl')
-            if hasattr(class_module, m):
-                c = getattr(class_module, m)
-                return c.from_config(config)
+    models = importlib.import_module('.models', 'pydl')
+    if hasattr(models, class_name):
+        model_class = getattr(models, class_name)
+        return model_class.from_config(model_config)
 
-    raise Exception('Invalid model!')
+    return None
 
 
 def load_json(inp):

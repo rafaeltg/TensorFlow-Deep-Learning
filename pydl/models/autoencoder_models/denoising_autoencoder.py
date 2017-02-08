@@ -3,7 +3,7 @@ from __future__ import print_function
 
 from keras.layers.noise import GaussianDropout, GaussianNoise
 
-from pydl.models.autoencoder_models.autoencoder import Autoencoder
+from .autoencoder import Autoencoder
 
 
 class DenoisingAutoencoder(Autoencoder):

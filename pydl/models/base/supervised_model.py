@@ -2,10 +2,9 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from .model import Model
+from pydl.utils.utilities import model_from_config, valid_act_functions
 from keras.models import Sequential
-
-import pydl.utils.utilities as utils
-from pydl.models.base.model import Model
 from keras.utils.layer_utils import layer_from_config
 from keras.layers import Dense
 from keras.regularizers import l1l2
@@ -49,7 +48,7 @@ class SupervisedModel(Model):
     def validate_params(self):
         super().validate_params()
         assert len(self.layers) > 0, 'Model must have at least one hidden layer'
-        assert self.dec_act_func in utils.valid_act_functions, 'Invalid decoder layer activation function'
+        assert self.dec_act_func in valid_act_functions, 'Invalid decoder layer activation function'
 
     def build_model(self, input_shape, n_output=1):
 
@@ -65,8 +64,6 @@ class SupervisedModel(Model):
 
         self._model = Sequential(layers=layers, name=self.name)
 
-        self._model.summary()
-        
         opt = self.get_optimizer(opt_func=self.opt,
                                  learning_rate=self.learning_rate,
                                  momentum=self.momentum)
@@ -178,8 +175,9 @@ class SupervisedModel(Model):
     def from_config(cls, config):
         layers = []
         for l in config['layers']:
-            if isinstance(l, Model):
-                utils.build_model()
-            layers.append(layer_from_config(l))
+            layer = model_from_config(l)
+            if layer is None:
+                layer = layer_from_config(l)
+            layers.append(layer)
         config['layers'] = layers
         return cls(**config)

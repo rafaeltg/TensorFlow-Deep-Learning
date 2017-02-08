@@ -1,7 +1,7 @@
 import os
 
 import numpy as np
-from pydl.models.autoencoder_models.seq_to_seq_autoencoder import SeqToSeqAutoencoder
+from pydl.models import SeqToSeqAutoencoder
 from pydl.utils.utilities import load_model
 
 

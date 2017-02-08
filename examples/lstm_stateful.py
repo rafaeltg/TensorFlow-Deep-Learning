@@ -4,9 +4,10 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
-from pydl.models.nnet_models.rnn import RNN
+from pydl.models import RNN
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
+from keras.layers import LSTM, Dropout
 
 
 def run_lstm_stateful():
@@ -35,8 +36,14 @@ def run_lstm_stateful():
 
     print('Creating a stateful LSTM')
     lstm = RNN(
-        layers=[32, 32],
-        cell_type='lstm',
+        layers=[
+            LSTM(output_dim=20,
+                 return_sequences=True),
+            Dropout(p=0.1),
+            LSTM(output_dim=20,
+                 return_sequences=False),
+            Dropout(p=0.1),
+        ],
         stateful=True,
         time_steps=1,
         num_epochs=10,

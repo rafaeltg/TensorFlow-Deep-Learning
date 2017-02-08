@@ -4,8 +4,7 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
-from pydl.models.autoencoder_models.stacked_autoencoder import StackedAutoencoder
-from pydl.models.autoencoder_models.autoencoder import Autoencoder
+from pydl.models import StackedAutoencoder, Autoencoder
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
 
