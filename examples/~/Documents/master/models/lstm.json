@@ -1,0 +1,111 @@
+{
+    "weights": "~/Documents/master/models/lstm.h5",
+    "model": {
+        "class_name": "RNN",
+        "config": {
+            "momentum": 0.5,
+            "name": "rnn",
+            "num_epochs": 300,
+            "seed": 42,
+            "layers": [
+                {
+                    "class_name": "LSTM",
+                    "config": {
+                        "dropout_W": 0.0,
+                        "batch_input_shape": [
+                            null,
+                            1,
+                            10
+                        ],
+                        "input_dtype": "float32",
+                        "input_length": null,
+                        "U_regularizer": null,
+                        "dropout_U": 0.0,
+                        "trainable": true,
+                        "inner_activation": "hard_sigmoid",
+                        "stateful": false,
+                        "init": "glorot_uniform",
+                        "input_dim": 10,
+                        "inner_init": "orthogonal",
+                        "consume_less": "cpu",
+                        "W_regularizer": null,
+                        "go_backwards": false,
+                        "forget_bias_init": "one",
+                        "unroll": false,
+                        "activation": "tanh",
+                        "return_sequences": true,
+                        "output_dim": 20,
+                        "name": "lstm_1",
+                        "b_regularizer": null
+                    }
+                },
+                {
+                    "class_name": "Dropout",
+                    "config": {
+                        "name": "dropout_1",
+                        "trainable": true,
+                        "p": 0.1
+                    }
+                },
+                {
+                    "class_name": "LSTM",
+                    "config": {
+                        "dropout_W": 0.0,
+                        "inner_init": "orthogonal",
+                        "inner_activation": "hard_sigmoid",
+                        "activation": "tanh",
+                        "consume_less": "cpu",
+                        "W_regularizer": null,
+                        "go_backwards": false,
+                        "return_sequences": false,
+                        "input_length": null,
+                        "U_regularizer": null,
+                        "dropout_U": 0.0,
+                        "trainable": true,
+                        "unroll": false,
+                        "output_dim": 20,
+                        "stateful": false,
+                        "name": "lstm_2",
+                        "init": "glorot_uniform",
+                        "b_regularizer": null,
+                        "forget_bias_init": "one",
+                        "input_dim": 20
+                    }
+                },
+                {
+                    "class_name": "Dropout",
+                    "config": {
+                        "name": "dropout_2",
+                        "trainable": true,
+                        "p": 0.1
+                    }
+                },
+                {
+                    "class_name": "Dense",
+                    "config": {
+                        "W_constraint": null,
+                        "activity_regularizer": null,
+                        "b_constraint": null,
+                        "W_regularizer": null,
+                        "bias": true,
+                        "b_regularizer": null,
+                        "trainable": true,
+                        "output_dim": 1,
+                        "init": "glorot_uniform",
+                        "name": "dense_1",
+                        "activation": "linear",
+                        "input_dim": 20
+                    }
+                }
+            ],
+            "opt": "adam",
+            "verbose": 0,
+            "learning_rate": 0.001,
+            "time_steps": 1,
+            "stateful": false,
+            "loss_func": "mse",
+            "batch_size": 100,
+            "dec_act_func": "linear"
+        }
+    }
+}

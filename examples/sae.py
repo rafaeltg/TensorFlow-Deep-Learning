@@ -5,6 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
 from pydl.models.autoencoder_models.stacked_autoencoder import StackedAutoencoder
+from pydl.models.autoencoder_models.autoencoder import Autoencoder
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
 
@@ -31,8 +32,10 @@ def run_sae():
 
     print('Creating Stacked Autoencoder')
     sae = StackedAutoencoder(
-        layers=[32, 16],
-        ae_num_epochs=[200],
+        layers=[
+            Autoencoder(n_hidden=32, enc_act_func='relu'),
+            Autoencoder(n_hidden=16, enc_act_func='relu'),
+        ],
     )
 
     print('Training')

@@ -79,14 +79,14 @@ class RNN(SupervisedModel):
             if isinstance(l, Recurrent):
                 l.stateful = self.stateful
                 if last_layer:
-                    l.return_sequences = True
+                    l.return_sequences = False
                     last_layer = False
                 else:
-                    l.return_sequences = False
+                    l.return_sequences = True
 
         # Add output layer
-        self.layers.append(Dense(output_dim=n_output,
-                                 activation=self.dec_act_func))
+        self.add_output_layer(n_output)
+        return self.layers
 
     def _train_step(self, x_train, y_train, x_valid=None, y_valid=None):
 

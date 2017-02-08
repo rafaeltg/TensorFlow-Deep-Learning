@@ -61,9 +61,9 @@ class SupervisedModel(Model):
 
         self.logger.info('Building {} model'.format(self.name))
 
-        self._create_layers(input_shape, n_output)
+        layers = self._create_layers(input_shape, n_output)
 
-        self._model = Sequential(layers=self.layers, name=self.name)
+        self._model = Sequential(layers=layers, name=self.name)
 
         self._model.summary()
         
@@ -80,8 +80,12 @@ class SupervisedModel(Model):
         if not hasattr(self.layers[0], 'batch_input_shape'):
             self.layers[0].create_input_layer(input_shape[1:])
 
-        # Add the output layer
-        self.layers.append(Dense(output_dim=n_output,
+        self.add_output_layer(n_output)
+
+        return self.layers
+
+    def add_output_layer(self, n_out):
+        self.layers.append(Dense(output_dim=n_out,
                                  activation=self.dec_act_func,
                                  W_regularizer=l1l2(self.l1_reg, self.l2_reg),
                                  b_regularizer=l1l2(self.l1_reg, self.l2_reg)))
@@ -174,6 +178,8 @@ class SupervisedModel(Model):
     def from_config(cls, config):
         layers = []
         for l in config['layers']:
+            if isinstance(l, Model):
+                utils.build_model()
             layers.append(layer_from_config(l))
         config['layers'] = layers
         return cls(**config)
