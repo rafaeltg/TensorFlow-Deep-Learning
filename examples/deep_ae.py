@@ -4,6 +4,7 @@ import numpy as np
 
 from pydl.models import DeepAutoencoder
 from pydl.utils.utilities import load_model
+from keras.layers import Dense
 
 
 def run_deep_ae():
@@ -20,9 +21,13 @@ def run_deep_ae():
     x_test = np.random.normal(loc=0, scale=1, size=(test_size, input_dim))
 
     print('Creating Deep Autoencoder')
-    hidden_size = 15
+    hidden_size = 5
     deep_ae = DeepAutoencoder(
-        n_hidden=[30, 20, hidden_size],
+        layers=[
+            Dense(output_dim=15),
+            Dense(output_dim=10),
+            Dense(output_dim=hidden_size)
+        ],
         num_epochs=400
     )
 
@@ -68,7 +73,6 @@ def run_deep_ae():
     print('Calculating testing set score')
     test_score_new = deep_ae_new.score(data=x_test)
     assert test_score == test_score_new
-
 
 if __name__ == '__main__':
     run_deep_ae()

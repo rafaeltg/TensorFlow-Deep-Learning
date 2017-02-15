@@ -2,6 +2,7 @@ import os
 import json
 import importlib
 import numpy as np
+from keras.utils.layer_utils import layer_from_config
 
 valid_act_functions = ['softmax', 'softplus', 'sigmoid', 'tanh', 'relu', 'linear']
 
@@ -53,7 +54,7 @@ def load_model(config=None):
         raise Exception('Invalid model!')
 
     if 'weights' in configs:
-        m.load_weights(configs['weights'])
+        m.load_model(configs['weights'])
 
     return m
 
@@ -84,6 +85,16 @@ def load_json(inp):
 def save_json(data, file_path):
     with open(file_path, 'w') as outfile:
         json.dump(data, outfile, sort_keys=False, indent=4, ensure_ascii=False)
+
+
+def layers_from_config(layers_config):
+    layers = []
+    for l in layers_config:
+        layer = model_from_config(l)
+        if layer is None:
+            layer = layer_from_config(l)
+        layers.append(layer)
+    return layers
 
 
 def create_dir(dir_path):

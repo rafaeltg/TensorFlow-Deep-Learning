@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from keras.layers import Dense
 from keras.regularizers import l1l2
 
@@ -17,46 +13,15 @@ class StackedAutoencoder(SupervisedModel):
     def __init__(self,
                  name='sae',
                  layers=None,
-                 dec_act_func='linear',
-                 loss_func='mse',
-                 l1_reg=0,
-                 l2_reg=0,
-                 opt='adam',
-                 learning_rate=0.001,
-                 momentum=0.5,
-                 num_epochs=100,
-                 batch_size=100,
-                 seed=42,
-                 verbose=0):
+                 **kwargs):
 
         """
-        :param layers: List containing the hidden units for each layer.
-        :param loss_func: loss function for the finetuning step.
-        :param dec_act_func: Finetuning step output layer activation function.
-        :param l1_reg:
-        :param l2_reg:
-        :param opt: Optimization function for the finetuning step.
-        :param learning_rate: Learning rate for the finetuning.
-        :param momentum: Momentum for the finetuning.
-        :param num_epochs: Number of epochs for the finetuning.
-        :param batch_size: Size of each mini-batch for the finetuning.
-        :param seed: positive integer for seeding random generators. Ignored if < 0.
-        :param verbose:
+        :param layers: List the Autoencoders
         """
 
         super().__init__(name=name,
                          layers=layers,
-                         dec_act_func=dec_act_func,
-                         loss_func=loss_func,
-                         l1_reg=l1_reg,
-                         l2_reg=l2_reg,
-                         num_epochs=num_epochs,
-                         batch_size=batch_size,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         momentum=momentum,
-                         seed=seed,
-                         verbose=verbose)
+                         **kwargs)
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
@@ -77,14 +42,11 @@ class StackedAutoencoder(SupervisedModel):
                                                 input_shape=[input_shape[1] if n == 0 else None],
                                                 weights=l.get_model_parameters()['enc'],
                                                 activation=l.enc_act_func,
-                                                W_regularizer=l1l2(self.l1_reg, self.l2_reg),
-                                                b_regularizer=l1l2(self.l1_reg, self.l2_reg)))
+                                                W_regularizer=l1l2(l.l1_reg, l.l2_reg),
+                                                b_regularizer=l1l2(l.l1_reg, l.l2_reg)))
             else:
                 fine_tuning_layers.append(l)
 
-        # Output layer
-        fine_tuning_layers.append(Dense(output_dim=n_output,
-                                        activation=self.dec_act_func))
         return fine_tuning_layers
 
     def _pretrain(self, x_train, x_valid=None):

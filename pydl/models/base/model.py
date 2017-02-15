@@ -11,7 +11,7 @@ import tensorflow as tf
 from keras.models import load_model, save_model
 
 import pydl.utils.utilities as utils
-from pydl.utils.logger import Logger
+from pydl.utils.logger import get_logger
 
 
 class Model:
@@ -20,24 +20,13 @@ class Model:
     Class representing an abstract Model.
     """
 
-    def __init__(self,
-                 name='',
-                 loss_func='mse',
-                 l1_reg=0.0,
-                 l2_reg=0.0,
-                 num_epochs=10,
-                 batch_size=100,
-                 opt='adam',
-                 learning_rate=0.001,
-                 momentum=0.1,
-                 seed=-1,
-                 verbose=0):
+    def __init__(self, **kwargs):
 
         """
+        Available parameters:
+
         :param name: Name of the model, used as filename.
         :param loss_func:
-        :param l1_reg: L1 weight regularization penalty, also known as LASSO.
-        :param l2_reg: L2 weight regularization penalty, also known as weight decay, or Ridge.
         :param num_epochs:
         :param batch_size:
         :param opt:
@@ -47,28 +36,28 @@ class Model:
         :param verbose: Level of verbosity. 0 - silent, 1 - print.
         """
 
-        self.name = name
-        self.loss_func = loss_func
-        self.l1_reg = l1_reg
-        self.l2_reg = l2_reg
-        self.num_epochs = num_epochs
-        self.batch_size = batch_size
-        self.opt = opt
-        self.learning_rate = learning_rate
-        self.momentum = momentum
-        self.seed = seed
-        self.verbose = verbose
+        self.name = kwargs.get('name', self.__class__.__name__)
+        self.loss_func = kwargs.get('loss_func', 'mse')
+        self.num_epochs = int(kwargs.get('num_epochs', 100))
+        self.batch_size = int(kwargs.get('batch_size', 32))
+        self.opt = str(kwargs.get('opt', 'adam'))
+        self.learning_rate = float(kwargs.get('learning_rate', 0.001))
 
-        self.validate_params()
+        if self.opt == 'sgd':
+            self.momentum = float(kwargs.get('momentum', 0.01))
+
+        self.seed = int(kwargs.get('seed', -1))
+        self.verbose = int(kwargs.get('verbose', 0))
+
+        if self.seed >= 0:
+            np.random.seed(self.seed)
+            tf.set_random_seed(self.seed)
+
+        self.logger = get_logger(self.name, self.verbose)
 
         self._model = None
 
-        if seed >= 0:
-            np.random.seed(seed)
-            tf.set_random_seed(seed)
-
-        # Create the logger
-        self.logger = Logger(name, verbose)
+        self.validate_params()
 
     def set_params(self, **params):
         valid_params = self.get_func_params(self.__init__).keys()
@@ -82,11 +71,10 @@ class Model:
         assert self.num_epochs > 0, 'Invalid number of training epochs'
         assert self.batch_size > 0, 'Invalid batch size'
         assert self.loss_func in utils.valid_loss_functions if isinstance(self.loss_func, str) else True, 'Invalid loss function'
-        assert self.l1_reg >= 0
-        assert self.l2_reg >= 0
         assert self.opt in utils.valid_optimization_functions, 'Invalid optimizer'
         assert self.learning_rate > 0, 'Invalid learning rate'
-        assert self.momentum > 0 if self.opt == 'sgd' else True, 'Invalid momentum rate'
+        if self.opt == 'sgd':
+            assert self.momentum > 0, 'Invalid momentum rate'
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -95,7 +83,7 @@ class Model:
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        setattr(self, 'logger', Logger(self.name, self.verbose))
+        setattr(self, 'logger', get_logger(self.name, self.verbose))
 
     def get_model_parameters(self):
         pass
@@ -121,45 +109,41 @@ class Model:
         utils.save_json(configs, os.path.join(path, file_name + '.json'))
         save_model(model=self._model, filepath=w_file)
 
+    def load_model(self, model_path, custom_objs=None):
+        file_path = model_path
+        if os.path.isdir(model_path):
+            file_path = os.path.join(model_path, self.name+'.h5')
+
+        assert os.path.isfile(file_path), 'Missing file - %s' % file_path
+        self._model = load_model(filepath=file_path, custom_objects=custom_objs)
+
     @classmethod
     def from_config(cls, config):
         return cls(**config)
 
     def get_config(self):
         p = self.__getstate__()
-        return {k: p[k] for k in self.get_func_params(self.__init__).keys()}
-
-    def load_weights(self, model_path):
-        file_path = model_path
-        if os.path.isdir(model_path):
-            file_path = os.path.join(model_path, self.name+'.h5')
-
-        assert os.path.isfile(file_path), 'Missing file - %s' % file_path
-        self._load_model(file_path)
-
-    def _load_model(self, config_file):
-        self._model = load_model(filepath=config_file)
+        return {k: v for k, v in p.items() if not str(k).startswith('_')}
 
     def get_loss_func(self):
         return self.loss_func if isinstance(self.loss_func, str) else self.loss_func.__name__
 
-    @staticmethod
-    def get_optimizer(opt_func, learning_rate, momentum):
+    def get_optimizer(self):
 
-        if opt_func == 'sgd':
-            return KOpt.SGD(lr=learning_rate, momentum=momentum)
+        if self.opt == 'sgd':
+            return KOpt.SGD(lr=self.learning_rate, momentum=self.momentum)
 
-        if opt_func == 'rmsprop':
-            return KOpt.RMSprop(lr=learning_rate)
+        if self.opt == 'rmsprop':
+            return KOpt.RMSprop(lr=self.learning_rate)
 
-        if opt_func == 'ada_grad':
-            return KOpt.Adagrad(lr=learning_rate)
+        if self.opt == 'ada_grad':
+            return KOpt.Adagrad(lr=self.learning_rate)
 
-        if opt_func == 'ada_delta':
-            return KOpt.Adadelta(lr=learning_rate)
+        if self.opt == 'ada_delta':
+            return KOpt.Adadelta(lr=self.learning_rate)
 
-        if opt_func == 'adam':
-            return KOpt.Adam(lr=learning_rate)
+        if self.opt == 'adam':
+            return KOpt.Adam(lr=self.learning_rate)
 
         raise Exception('Invalid optimization function')
 
@@ -172,5 +156,5 @@ class Model:
 
     def copy(self):
         c = self.__new__(self.__class__)
-        c.__setstate__(self.__dict__.copy())
+        c.__dict__.update(self.__dict__.copy())
         return c

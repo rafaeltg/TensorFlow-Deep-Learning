@@ -7,6 +7,7 @@ from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import StackedAutoencoder, DenoisingAutoencoder
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
+from keras.layers import Dense
 
 
 def run_sdae():
@@ -39,7 +40,10 @@ def run_sdae():
             DenoisingAutoencoder(n_hidden=16,
                                  enc_act_func='relu',
                                  corr_type='masking',
-                                 corr_param=0.1)
+                                 corr_param=0.1),
+            # Finetunning Output Layer
+            Dense(output_dim=y_train.shape[1],
+                  activation='linear')
         ],
     )
 

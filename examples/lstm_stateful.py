@@ -7,7 +7,7 @@ from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import RNN
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
-from keras.layers import LSTM, Dropout
+from keras.layers import Dense, LSTM, Dropout
 
 
 def run_lstm_stateful():
@@ -43,6 +43,9 @@ def run_lstm_stateful():
             LSTM(output_dim=20,
                  return_sequences=False),
             Dropout(p=0.1),
+            # Output Layer
+            Dense(output_dim=y_train.shape[1],
+                  activation='linear')
         ],
         stateful=True,
         time_steps=1,

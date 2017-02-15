@@ -1,13 +1,7 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from .model import Model
-from pydl.utils.utilities import model_from_config, valid_act_functions
+from pydl.utils.utilities import layers_from_config
 from keras.models import Sequential
-from keras.utils.layer_utils import layer_from_config
 from keras.layers import Dense
-from keras.regularizers import l1l2
 
 
 class SupervisedModel(Model):
@@ -15,40 +9,13 @@ class SupervisedModel(Model):
     """ Class representing an abstract Supervised Model.
     """
 
-    def __init__(self,
-                 name,
-                 layers=None,
-                 dec_act_func='linear',
-                 l1_reg=0.0,
-                 l2_reg=0.0,
-                 loss_func='mse',
-                 num_epochs=10,
-                 batch_size=100,
-                 opt='adam',
-                 learning_rate=0.001,
-                 momentum=0.5,
-                 verbose=0,
-                 seed=42):
-
+    def __init__(self, layers=None, **kwargs):
         self.layers = layers
-        self.dec_act_func = dec_act_func
-
-        super().__init__(name=name,
-                         loss_func=loss_func,
-                         l1_reg=l1_reg,
-                         l2_reg=l2_reg,
-                         num_epochs=num_epochs,
-                         batch_size=batch_size,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         momentum=momentum,
-                         seed=seed,
-                         verbose=verbose)
+        super().__init__(**kwargs)
 
     def validate_params(self):
         super().validate_params()
-        assert len(self.layers) > 0, 'Model must have at least one hidden layer'
-        assert self.dec_act_func in valid_act_functions, 'Invalid decoder layer activation function'
+        assert self.layers and len(self.layers) > 0, 'Model must have at least one hidden layer'
 
     def build_model(self, input_shape, n_output=1):
 
@@ -64,11 +31,7 @@ class SupervisedModel(Model):
 
         self._model = Sequential(layers=layers, name=self.name)
 
-        opt = self.get_optimizer(opt_func=self.opt,
-                                 learning_rate=self.learning_rate,
-                                 momentum=self.momentum)
-
-        self._model.compile(optimizer=opt, loss=self.loss_func)
+        self._model.compile(optimizer=self.get_optimizer(), loss=self.loss_func)
 
         self.logger.info('Done building {} model'.format(self.name))
 
@@ -77,15 +40,17 @@ class SupervisedModel(Model):
         if not hasattr(self.layers[0], 'batch_input_shape'):
             self.layers[0].create_input_layer(input_shape[1:])
 
-        self.add_output_layer(n_output)
+        self._check_output_layer(n_output)
 
         return self.layers
 
-    def add_output_layer(self, n_out):
-        self.layers.append(Dense(output_dim=n_out,
-                                 activation=self.dec_act_func,
-                                 W_regularizer=l1l2(self.l1_reg, self.l2_reg),
-                                 b_regularizer=l1l2(self.l1_reg, self.l2_reg)))
+    def _check_output_layer(self, n_output):
+        for l in self.layers[::-1]:
+            if isinstance(l, Dense):
+                if l.output_dim != n_output:
+                    self.logger.info('Missing output layer! Creating default layer based on output shape...')
+                    self.layers.append(Dense(output_dim=n_output))
+                    break
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):
 
@@ -161,7 +126,6 @@ class SupervisedModel(Model):
 
     def get_config(self):
         conf = super().get_config()
-        conf['dec_act_func'] = self.dec_act_func
         layers = []
         for l in self.layers:
             layers.append({
@@ -173,11 +137,5 @@ class SupervisedModel(Model):
 
     @classmethod
     def from_config(cls, config):
-        layers = []
-        for l in config['layers']:
-            layer = model_from_config(l)
-            if layer is None:
-                layer = layer_from_config(l)
-            layers.append(layer)
-        config['layers'] = layers
+        config['layers'] = layers_from_config(config['layers'])
         return cls(**config)

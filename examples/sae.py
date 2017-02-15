@@ -7,6 +7,7 @@ from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import StackedAutoencoder, Autoencoder
 from pydl.validator.cv_metrics import mape
 from pydl.utils.utilities import load_model
+from keras.layers import Dense
 
 
 def run_sae():
@@ -34,6 +35,8 @@ def run_sae():
         layers=[
             Autoencoder(n_hidden=32, enc_act_func='relu'),
             Autoencoder(n_hidden=16, enc_act_func='relu'),
+            # Finetunning Output Layer
+            Dense(output_dim=y_train.shape[1], activation='linear')
         ],
     )
 

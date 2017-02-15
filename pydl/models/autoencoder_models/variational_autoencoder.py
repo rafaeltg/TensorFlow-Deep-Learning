@@ -1,12 +1,7 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import keras.models as kmodels
 from keras import backend as K
 from keras import objectives
 from keras.layers import Input, Dense, Lambda
-from keras.models import load_model
 
 from pydl.utils.utilities import valid_act_functions
 from ..base import UnsupervisedModel
@@ -23,26 +18,13 @@ class VariationalAutoencoder(UnsupervisedModel):
                  n_hidden=64,
                  enc_act_func='relu',
                  dec_act_func='relu',
-                 num_epochs=10,
-                 batch_size=100,
-                 opt='rmsprop',
-                 learning_rate=0.01,
-                 momentum=0.5,
-                 verbose=0,
-                 seed=-1):
+                 **kwargs):
 
         """
         :param n_latent: number of units in the latent layer
         :param n_hidden: number of hidden units
         :param enc_act_func: Activation function for the encoder.
         :param dec_act_func: Activation function for the decoder.
-        :param num_epochs: Number of epochs for training
-        :param batch_size: Size of each mini-batch
-        :param opt: Which optimizer to use.
-        :param learning_rate: Initial learning rate
-        :param momentum: Momentum parameter
-        :param verbose: Level of verbosity. 0 - silent, 1 - print accuracy.
-        :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
         self.n_latent = n_latent
@@ -52,13 +34,7 @@ class VariationalAutoencoder(UnsupervisedModel):
 
         super().__init__(name=name,
                          loss_func=self._vae_loss,
-                         num_epochs=num_epochs,
-                         batch_size=batch_size,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         momentum=momentum,
-                         seed=seed,
-                         verbose=verbose)
+                         **kwargs)
 
         self.n_inputs = None
 
@@ -157,5 +133,6 @@ class VariationalAutoencoder(UnsupervisedModel):
 
         return params
 
-    def _load_model(self, config_file):
-        self._model = load_model(filepath=config_file, custom_objects={'_vae_loss': self._vae_loss})
+    def load_model(self, model_path, custom_objs=None):
+        super().load_model(model_path=model_path, custom_objs={'_vae_loss': self._vae_loss})
+

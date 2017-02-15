@@ -1,9 +1,4 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from keras.layers import Recurrent
-
 from ..base import SupervisedModel
 
 
@@ -17,15 +12,7 @@ class RNN(SupervisedModel):
                  layers=None,
                  stateful=True,
                  time_steps=1,
-                 dec_act_func='linear',
-                 loss_func='mse',
-                 num_epochs=100,
-                 batch_size=1,
-                 opt='adam',
-                 learning_rate=0.001,
-                 momentum=0.5,
-                 verbose=0,
-                 seed=42):
+                 **kwargs):
 
         """
         :param name: Name of the model.
@@ -34,15 +21,6 @@ class RNN(SupervisedModel):
             computed for the samples in one batch will be reused as initial states for the samples
             in the next batch.
         :param time_steps:
-        :param dec_act_func: Activation function for the output layer.
-        :param loss_func: Cost function.
-        :param num_epochs: Number of training epochs.
-        :param batch_size: Size of each training mini-batch.
-        :param opt: Optimizer function.
-        :param learning_rate: Initial learning rate.
-        :param momentum: Initial momentum value.
-        :param verbose: Level of verbosity. 0 - silent, 1 - print.
-        :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
         self.stateful = stateful
@@ -50,15 +28,7 @@ class RNN(SupervisedModel):
 
         super().__init__(name=name,
                          layers=layers,
-                         dec_act_func=dec_act_func,
-                         loss_func=loss_func,
-                         num_epochs=num_epochs,
-                         batch_size=batch_size,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         momentum=momentum,
-                         seed=seed,
-                         verbose=verbose)
+                         **kwargs)
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
@@ -85,7 +55,7 @@ class RNN(SupervisedModel):
                     l.return_sequences = True
 
         # Add output layer
-        self.add_output_layer(n_output)
+        self._check_output_layer(n_output)
         return self.layers
 
     def _train_step(self, x_train, y_train, x_valid=None, y_valid=None):

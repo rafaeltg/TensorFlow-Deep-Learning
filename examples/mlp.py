@@ -39,8 +39,13 @@ def run_mlp():
                   W_regularizer=l1l2(0.0001, 0.001)),
             Dropout(p=0.1),
             Dense(output_dim=16,
-                  activation='relu'),
-            Dropout(p=0.1)
+                  activation='relu',
+                  W_regularizer=l1l2(0.0001, 0.001)),
+            Dropout(p=0.1),
+
+            # Output Layer
+            Dense(output_dim=y_train.shape[1],
+                  activation='linear')
         ],
         num_epochs=200,
     )

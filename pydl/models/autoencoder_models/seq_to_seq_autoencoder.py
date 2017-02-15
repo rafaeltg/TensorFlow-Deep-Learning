@@ -1,7 +1,3 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import keras.backend as K
 import keras.models as kmodels
 from keras.layers import Input, LSTM, RepeatVector
@@ -20,16 +16,7 @@ class SeqToSeqAutoencoder(Autoencoder):
                  time_steps=1,
                  enc_act_func='tanh',
                  dec_act_func='tanh',
-                 l1_reg=0.0,
-                 l2_reg=0.0,
-                 loss_func='mse',
-                 num_epochs=10,
-                 batch_size=100,
-                 opt='rmsprop',
-                 learning_rate=0.01,
-                 momentum=0.5,
-                 verbose=0,
-                 seed=42):
+                 **kwargs):
 
         """
         :param n_hidden: number of hidden units
@@ -38,14 +25,6 @@ class SeqToSeqAutoencoder(Autoencoder):
         :param dec_act_func: Activation function for the decoder.
         :param l1_reg: L1 weight regularization penalty, also known as LASSO.
         :param l2_reg: L2 weight regularization penalty, also known as weight decay, or Ridge.
-        :param loss_func: Loss function.
-        :param num_epochs: Number of epochs for training.
-        :param batch_size: Size of each mini-batch.
-        :param opt: Which optimizer to use.
-        :param learning_rate: Initial learning rate.
-        :param momentum: Momentum parameter.
-        :param verbose: Level of verbosity. 0 - silent, 1 - print
-        :param seed: positive integer for seeding random generators. Ignored if < 0.
         """
 
         self.time_steps = time_steps
@@ -54,16 +33,7 @@ class SeqToSeqAutoencoder(Autoencoder):
                          n_hidden=n_hidden,
                          enc_act_func=enc_act_func,
                          dec_act_func=dec_act_func,
-                         l1_reg=l1_reg,
-                         l2_reg=l2_reg,
-                         loss_func=loss_func,
-                         num_epochs=num_epochs,
-                         batch_size=batch_size,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         momentum=momentum,
-                         verbose=verbose,
-                         seed=seed)
+                         **kwargs)
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 

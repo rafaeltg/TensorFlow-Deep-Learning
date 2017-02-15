@@ -1,14 +1,11 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import copy
 
 import keras.backend as K
 import keras.models as kmodels
 from keras.layers import Input, Dense
-from keras.regularizers import l1l2
 
-from pydl.utils.utilities import valid_act_functions
 from ..base import UnsupervisedModel
+from pydl.utils.utilities import layers_from_config
 
 
 class DeepAutoencoder(UnsupervisedModel):
@@ -18,61 +15,21 @@ class DeepAutoencoder(UnsupervisedModel):
 
     def __init__(self,
                  name='deep_ae',
-                 n_hidden=list([64, 32, 16]),
-                 enc_act_func='relu',
-                 dec_act_func='linear',
-                 l1_reg=0.0,
-                 l2_reg=0.0,
-                 loss_func='mse',
-                 num_epochs=10,
-                 batch_size=100,
-                 opt='rmsprop',
-                 learning_rate=0.01,
-                 momentum=0.5,
-                 verbose=0,
-                 seed=42):
+                 layers=None,
+                 **kwargs):
 
         """
-        :param n_hidden: Number of hidden units of each layer
-        :param enc_act_func: Activation function for the encoder.
-        :param dec_act_func: Activation function for the decoder.
-        :param l1_reg: L1 weight regularization penalty, also known as LASSO.
-        :param l2_reg: L2 weight regularization penalty, also known as weight decay, or Ridge.
-        :param loss_func: Loss function.
-        :param num_epochs: Number of epochs for training.
-        :param batch_size: Size of each mini-batch.
-        :param opt: Which optimizer to use.
-        :param learning_rate: Initial learning rate.
-        :param momentum: Momentum parameter.
-        :param verbose: Level of verbosity. 0 - silent, 1 - print.
-        :param seed: positive integer for seeding random generators. Ignored if < 0.
+        :param layers: List of hidden layers
         """
 
-        super().__init__(name=name,
-                         loss_func=loss_func,
-                         l1_reg=l1_reg,
-                         l2_reg=l2_reg,
-                         num_epochs=num_epochs,
-                         batch_size=batch_size,
-                         opt=opt,
-                         learning_rate=learning_rate,
-                         momentum=momentum,
-                         seed=seed,
-                         verbose=verbose)
+        self.layers = layers
 
-        self.logger.info('{} __init__'.format(__class__.__name__))
-
-        # Validations
-        assert len(n_hidden) > 0
-        assert all([l > 0 for l in n_hidden])
-        assert enc_act_func in valid_act_functions
-        assert dec_act_func in valid_act_functions
-
-        self.n_hidden = n_hidden
-        self.enc_act_func = enc_act_func
-        self.dec_act_func = dec_act_func
+        super().__init__(name=name, **kwargs)
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
+
+    def validate_params(self):
+        assert self.layers is not None, 'Missing hidden layers!'
 
     def _create_layers(self, input_layer):
 
@@ -84,16 +41,17 @@ class DeepAutoencoder(UnsupervisedModel):
         self.logger.info('Creating {} layers'.format(self.name))
 
         encode_layer = input_layer
-        for l in self.n_hidden:
-            encode_layer = Dense(output_dim=l,
-                                 activation=self.enc_act_func,
-                                 W_regularizer=l1l2(self.l1_reg, self.l2_reg),
-                                 b_regularizer=l1l2(self.l1_reg, self.l2_reg))(encode_layer)
+        for i, l in enumerate(copy.deepcopy(self.layers)):
+            l.name = 'encoder_%d' % i
+            encode_layer = l(encode_layer)
 
         self._decode_layer = encode_layer
-        for l in self.n_hidden[-2:-(len(self.n_hidden)+1):-1] + [K.int_shape(input_layer)[1]]:
-            self._decode_layer = Dense(output_dim=l,
-                                       activation=self.dec_act_func)(self._decode_layer)
+        for i, l in enumerate(self.layers[-2:-(len(self.layers)+1):-1]):
+            l.name = 'decoder_%d' % i
+            self._decode_layer = l(self._decode_layer)
+
+        self._decode_layer = Dense(name='decoder_%d' % (len(self.layers)-1),
+                                   output_dim=K.int_shape(input_layer)[1])(self._decode_layer)
 
     def _create_encoder_model(self):
 
@@ -103,8 +61,8 @@ class DeepAutoencoder(UnsupervisedModel):
 
         self.logger.info('Creating {} encoder model'.format(self.name))
 
-        self._encoder = kmodels.Model(input=self._model.layers[0].inbound_nodes[0].output_tensors,
-                                      output=self._model.layers[-(len(self.n_hidden)+1)].inbound_nodes[0].output_tensors)
+        self._encoder = kmodels.Model(input=self._model.layers[0].output,
+                                      output=self._model.layers[int(len(self._model.layers)/2)].output)
 
         self.logger.info('Done creating {} encoder model'.format(self.name))
 
@@ -116,10 +74,11 @@ class DeepAutoencoder(UnsupervisedModel):
 
         self.logger.info('Creating {} decoder model'.format(self.name))
 
-        encoded_input = Input(shape=(self.n_hidden[-1],))
+        dec_idx = int(len(self._model.layers)/2)
+        encoded_input = Input(shape=(self._model.layers[dec_idx].output_shape[1],))
 
         decoder_layer = encoded_input
-        for l in self._model.layers[len(self.n_hidden)+1:]:
+        for l in self._model.layers[dec_idx+1:]:
             decoder_layer = l(decoder_layer)
 
         self._decoder = kmodels.Model(input=encoded_input, output=decoder_layer)
@@ -138,3 +97,19 @@ class DeepAutoencoder(UnsupervisedModel):
         }
 
         return params
+
+    def get_config(self):
+        conf = super().get_config()
+        layers = []
+        for l in self.layers:
+            layers.append({
+                'class_name': l.__class__.__name__,
+                'config': l.get_config(),
+            })
+        conf['layers'] = layers
+        return conf
+
+    @classmethod
+    def from_config(cls, config):
+        config['layers'] = layers_from_config(config['layers'])
+        return cls(**config)
