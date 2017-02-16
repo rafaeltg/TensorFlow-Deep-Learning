@@ -53,7 +53,7 @@ class SupervisedModel(Model):
                 if l.output_dim != n_output:
                     self.logger.info('Missing output layer! Creating default layer based on output shape...')
                     self.layers.append(Dense(output_dim=n_output))
-                    break
+                break
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):
 
@@ -77,7 +77,6 @@ class SupervisedModel(Model):
         self.logger.info('Done {} supervised training...'.format(self.name))
 
     def _train_step(self, x_train, y_train, x_valid=None, y_valid=None):
-
         self._model.fit(x=x_train,
                         y=y_train,
                         batch_size=self.batch_size,
