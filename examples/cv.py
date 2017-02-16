@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import MLP
-from pydl.validator.model_validator import ModelValidator
+from pydl.model_selection.model_selection import CV
 
 from keras.layers import Dense, Dropout
 
@@ -37,7 +37,7 @@ def run_cv():
     )
 
     print('Creating TrainTestSplitCV method')
-    cv = ModelValidator(method='split', test_size=0.2)
+    cv = CV(method='split', test_size=0.2)
 
     print('Running CV!')
     res = cv.run(model=mlp, x=x, y=y, metrics=['mape', 'rmse'])
@@ -46,7 +46,7 @@ def run_cv():
     print(json.dumps(res, indent=4, separators=(',', ': ')))
 
     print('\nCreating TimeSeriesCV method')
-    cv = ModelValidator(method='time_series', window=1000, horizon=100, by=100, fixed=False)
+    cv = CV(method='time_series', window=1000, horizon=100, by=100, fixed=False)
 
     print('Running CV!')
     res = cv.run(model=mlp, x=x, y=y, metrics=['mape', 'rmse'])

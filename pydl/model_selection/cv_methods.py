@@ -4,7 +4,7 @@ from __future__ import print_function
 
 from math import floor
 
-from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold, ShuffleSplit
+from sklearn.model_selection import LeaveOneOut, KFold, StratifiedKFold, ShuffleSplit, StratifiedShuffleSplit
 
 
 class TrainTestSplitCV:
@@ -57,6 +57,8 @@ def get_cv_method(method, **kwargs):
         return ShuffleSplit(**kwargs)
     elif method == 'split':
         return TrainTestSplitCV(**kwargs)
+    elif method == 's_shuffle_split':
+        return StratifiedShuffleSplit(**kwargs)
     elif method == 'time_series':
         return TimeSeriesCV(**kwargs)
     else:

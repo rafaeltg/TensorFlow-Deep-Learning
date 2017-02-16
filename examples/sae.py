@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import StackedAutoencoder, Autoencoder
-from pydl.validator.cv_metrics import mape
+from pydl.model_selection.cv_metrics import mape
 from pydl.utils.utilities import load_model
 from keras.layers import Dense
 
@@ -50,7 +50,7 @@ def run_sae():
     print('Test score = {}'.format(test_score))
 
     print('Predicting test data')
-    y_test_pred = sae.predict(data=x_test)
+    y_test_pred = sae.predict(x_test)
     print('Predicted y_test shape = {}'.format(y_test_pred.shape))
     assert y_test_pred.shape == y_test.shape
 
@@ -72,7 +72,7 @@ def run_sae():
     assert test_score == sae_new.score(x=x_test, y=y_test)
 
     print('Predicting test data')
-    y_test_pred_new = sae_new.predict(data=x_test)
+    y_test_pred_new = sae_new.predict(x_test)
     assert np.array_equal(y_test_pred, y_test_pred_new)
 
     print('Calculating MAPE')

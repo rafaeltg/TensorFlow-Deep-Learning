@@ -12,8 +12,8 @@ valid_loss_functions = ['mse',                       # Mean Squared Error
                         'msle',                      # Mean Squared Logarithmic Error
                         'binary_crossentropy',       # Log loss
                         'categorical_crossentropy',  # Multiclass Log loss
-                        'kld',                       # Kullback Leibler Divergence (information gain)
-                        'custom']
+                        'kld'                        # Kullback Leibler Divergence (information gain)
+                        ]
 
 valid_optimization_functions = ['sgd', 'rmsprop', 'adagrad', 'adadelta', 'adam']
 

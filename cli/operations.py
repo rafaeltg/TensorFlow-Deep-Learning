@@ -8,9 +8,9 @@ from pydl.optimizer.optimizer import CMAESOptimizer
 from pydl.optimizer.parameter_dictionary import ParameterDictionary
 from pydl.utils import datasets
 from pydl.utils.utilities import load_model, save_json
-from pydl.validator.cv_methods import get_cv_method
-from pydl.validator.cv_metrics import available_metrics
-from pydl.validator.model_validator import ModelValidator
+from pydl.model_selection.cv_methods import get_cv_method
+from pydl.model_selection.cv_metrics import available_metrics
+from pydl.model_selection.model_selection import CV
 
 
 def fit(config, output):
@@ -138,7 +138,7 @@ def validate(config, output):
 
     # Get validation method
     method, params, metrics = get_cv_config(config)
-    cv = ModelValidator(method=method, **params)
+    cv = CV(method=method, **params)
     results = cv.run(model=m, x=x, y=y, metrics=metrics)
 
     # Save results into a JSON file

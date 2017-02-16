@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import RNN
-from pydl.validator.cv_metrics import mape
+from pydl.model_selection.cv_metrics import mape
 from pydl.utils.utilities import load_model
 from keras.layers import Dense, LSTM, Dropout
 
@@ -63,7 +63,7 @@ def run_lstm_stateful():
     print('Test score = {}'.format(test_score))
 
     print('Predicting test data')
-    y_test_pred = lstm.predict(data=x_test)
+    y_test_pred = lstm.predict(x_test)
 
     assert y_test_pred.shape == y_test.shape
 
@@ -85,7 +85,7 @@ def run_lstm_stateful():
     assert test_score == lstm_new.score(x=x_test, y=y_test)
 
     print('Predicting test data')
-    y_test_pred_new = lstm_new.predict(data=x_test)
+    y_test_pred_new = lstm_new.predict(x_test)
     assert np.array_equal(y_test_pred, y_test_pred_new)
 
     print('Calculating MAPE')
