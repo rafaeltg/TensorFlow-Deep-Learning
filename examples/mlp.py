@@ -2,12 +2,10 @@ import os
 import numpy as np
 
 from sklearn.preprocessing import MinMaxScaler
-from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import MLP
 from pydl.model_selection.cv_metrics import mape
 from pydl.utils.utilities import load_model
-from keras.layers import Dense, Dropout
-from keras.regularizers import l1l2
+from examples.synthetic import mackey_glass, create_dataset
 
 
 def run_mlp():
@@ -31,24 +29,13 @@ def run_mlp():
     x_test, y_test = create_dataset(test, look_back)
 
     print('Creating MLP')
-    mlp = MLP(
-        layers=[
-            Dense(input_shape=[look_back],
-                  output_dim=32,
-                  activation='relu',
-                  W_regularizer=l1l2(0.0001, 0.001)),
-            Dropout(p=0.1),
-            Dense(output_dim=16,
-                  activation='relu',
-                  W_regularizer=l1l2(0.0001, 0.001)),
-            Dropout(p=0.1),
-
-            # Output Layer
-            Dense(output_dim=y_train.shape[1],
-                  activation='linear')
-        ],
-        num_epochs=200,
-    )
+    mlp = MLP(layers=[32, 16],
+              activation='relu',
+              out_activation='linear',
+              dropout=0.1,
+              l1_reg=0.00001,
+              l2_reg=0.00001,
+              num_epochs=200)
 
     print('Training')
     mlp.fit(x_train=x_train, y_train=y_train)
@@ -68,12 +55,12 @@ def run_mlp():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    mlp.save_model('/home/rafael/models/', 'mlp')
-    assert os.path.exists('/home/rafael/models/mlp.json')
-    assert os.path.exists('/home/rafael/models/mlp.h5')
+    mlp.save_model('models/', 'mlp')
+    assert os.path.exists('models/mlp.json')
+    assert os.path.exists('models/mlp.h5')
 
     print('Loading model')
-    mlp_new = load_model('/home/rafael/models/mlp.json')
+    mlp_new = load_model('models/mlp.json')
 
     print('Calculating train score')
     assert train_score == mlp_new.score(x=x_train, y=y_train)

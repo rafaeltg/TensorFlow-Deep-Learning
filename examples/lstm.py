@@ -7,7 +7,6 @@ from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import RNN
 from pydl.model_selection.cv_metrics import mape
 from pydl.utils.utilities import load_model
-from keras.layers import Dense, LSTM, Dropout
 
 
 def run_lstm():
@@ -35,23 +34,13 @@ def run_lstm():
     x_test = np.reshape(x_test, (x_test.shape[0], 1, x_test.shape[1]))
 
     print('Creating a stateless LSTM')
-    lstm = RNN(
-        layers=[
-            LSTM(output_dim=20,
-                 return_sequences=True),
-            Dropout(p=0.1),
-            LSTM(output_dim=20,
-                 return_sequences=False),
-            Dropout(p=0.1),
-            # Output Layer
-            Dense(output_dim=y_train.shape[1],
-                  activation='linear')
-        ],
-        stateful=False,
-        time_steps=1,
-        num_epochs=300,
-        batch_size=100
-    )
+    lstm = RNN(layers=[50, 50],
+               dropout=[0.1, 0.2],
+               stateful=False,
+               time_steps=1,
+               cell_type='lstm',
+               num_epochs=300,
+               batch_size=100)
 
     print('Training')
     lstm.fit(x_train=x_train, y_train=y_train)
@@ -71,12 +60,12 @@ def run_lstm():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    lstm.save_model('~/Documents/master/models/', 'lstm')
-    assert os.path.exists('~/Documents/master/models/lstm.json')
-    assert os.path.exists('~/Documents/master/models/lstm.h5')
+    lstm.save_model('models/', 'lstm')
+    assert os.path.exists('models/lstm.json')
+    assert os.path.exists('models/lstm.h5')
 
     print('Loading model')
-    lstm_new = load_model('~/Documents/master/models/lstm.json')
+    lstm_new = load_model('models/lstm.json')
 
     print('Calculating train score')
     assert train_score == lstm_new.score(x=x_train, y=y_train)

@@ -23,12 +23,8 @@ def run_deep_ae():
     print('Creating Deep Autoencoder')
     hidden_size = 5
     deep_ae = DeepAutoencoder(
-        layers=[
-            Dense(output_dim=15),
-            Dense(output_dim=10),
-            Dense(output_dim=hidden_size)
-        ],
-        num_epochs=400
+        n_hidden=[15, 10, hidden_size],
+        num_epochs=100
     )
 
     print('Training')
@@ -51,12 +47,12 @@ def run_deep_ae():
     assert x_test_rec.shape == x_test.shape
 
     print('Saving model')
-    deep_ae.save_model('/home/rafael/models/', 'deep_ae')
-    assert os.path.exists('/home/rafael/models/deep_ae.json')
-    assert os.path.exists('/home/rafael/models/deep_ae.h5')
+    deep_ae.save_model('models/', 'deep_ae')
+    assert os.path.exists('models/deep_ae.json')
+    assert os.path.exists('models/deep_ae.h5')
 
     print('Loading model')
-    deep_ae_new = load_model('/home/rafael/models/deep_ae.json')
+    deep_ae_new = load_model('models/deep_ae.json')
 
     print('Transforming data')
     x_test_tr_new = deep_ae_new.transform(data=x_test)

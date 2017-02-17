@@ -97,36 +97,31 @@ def layers_from_config(layers_config):
     return layers
 
 
-def create_dir(dir_path):
 
-    """
-    :param dir_path: directory to be created
-    """
+def expand_arg(layers, arg_to_expand):
 
-    try:
-        if not os.path.exists(dir_path):
-            print('Creating %s directory.' % dir_path)
-            os.makedirs(dir_path)
-    except OSError as e:
-        raise e
-
-
-def expand_args(layers, args_to_expand):
-
-    """Expands all the lists in args_to_expand into the length of layers.
+    """Expands the arg_to_expand into the length of layers.
     This is used as a convenience so that the user does not need to specify the
     complete list of parameters for model initialization.
     IE: the user can just specify one parameter and this function will expand it
     :param layers:
-    :param args_to_expand:
+    :param arg_to_expand:
     :return:
     """
 
-    for key, val in args_to_expand.items():
-        if isinstance(val, list) and (len(val) != len(layers)):
-            args_to_expand[key] = [val[0] for _ in layers]
+    if not isinstance(arg_to_expand, list):
+        arg_to_expand = [arg_to_expand]
 
-    return args_to_expand
+    if len(arg_to_expand) == len(layers):
+        return arg_to_expand
+
+    if len(arg_to_expand) > len(layers):
+        return arg_to_expand[0:len(layers)]
+
+    missing_values = len(layers) - len(arg_to_expand)
+    result = arg_to_expand + [arg_to_expand[-1] for _ in range(missing_values)]
+
+    return result
 
 
 def flag_to_list(flag_val, dtype):

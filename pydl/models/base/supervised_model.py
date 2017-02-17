@@ -1,8 +1,7 @@
 import numpy as np
 from .model import Model
-from pydl.utils.utilities import layers_from_config
+from pydl.utils.utilities import layers_from_config, expand_arg, valid_act_functions
 from keras.models import Sequential
-from keras.layers import Dense
 from keras.utils.np_utils import to_categorical
 
 
@@ -11,13 +10,31 @@ class SupervisedModel(Model):
     """ Class representing an abstract Supervised Model.
     """
 
-    def __init__(self, layers=None, **kwargs):
+    def __init__(self,
+                 layers=list([]),
+                 activation='relu',
+                 out_activation='linear',
+                 dropout=0,
+                 l1_reg=0,
+                 l2_reg=0,
+                 **kwargs):
+
         self.layers = layers
+        self.activation = expand_arg(self.layers, activation)
+        self.out_activation = out_activation
+        self.dropout = expand_arg(self.layers, dropout)
+        self.l1_reg = expand_arg(self.layers, l1_reg)
+        self.l2_reg = expand_arg(self.layers, l2_reg)
         super().__init__(**kwargs)
 
     def validate_params(self):
         super().validate_params()
         assert self.layers and len(self.layers) > 0, 'Model must have at least one hidden layer'
+        assert all([0 <= d <= 1 for d in self.dropout]), 'Invalid dropout value'
+        assert all([f in valid_act_functions for f in self.activation]), 'Invalid activation function'
+        assert self.out_activation in valid_act_functions, 'Invalid output activation function'
+        assert all([x >= 0 for x in self.l1_reg]), 'Invalid l1_reg value'
+        assert all([x >= 0 for x in self.l2_reg]), 'Invalid l2_reg value'
 
     def build_model(self, input_shape, n_output=1, metrics=None):
 
@@ -30,30 +47,16 @@ class SupervisedModel(Model):
 
         self.logger.info('Building {} model'.format(self.name))
 
-        layers = self._create_layers(input_shape, n_output)
+        self._model = Sequential(name=self.name)
 
-        self._model = Sequential(layers=layers, name=self.name)
+        self._create_layers(input_shape, n_output)
 
         self._model.compile(optimizer=self.get_optimizer(), loss=self.loss_func, metrics=metrics)
 
         self.logger.info('Done building {} model'.format(self.name))
 
     def _create_layers(self, input_shape, n_output):
-
-        if not hasattr(self.layers[0], 'batch_input_shape'):
-            self.layers[0].create_input_layer(input_shape[1:])
-
-        self._check_output_layer(n_output)
-
-        return self.layers
-
-    def _check_output_layer(self, n_output):
-        for l in self.layers[::-1]:
-            if isinstance(l, Dense):
-                if l.output_dim != n_output:
-                    self.logger.info('Missing output layer! Creating default layer based on output shape...')
-                    self.layers.append(Dense(output_dim=n_output))
-                break
+        pass
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None):
 
@@ -137,16 +140,20 @@ class SupervisedModel(Model):
         conf = super().get_config()
         layers = []
         for l in self.layers:
-            layers.append({
-                'class_name': l.__class__.__name__,
-                'config': l.get_config(),
-            })
+            if isinstance(l, int):
+                layers.append(l)
+            else:
+                layers.append({
+                    'class_name': l.__class__.__name__,
+                    'config': l.get_config(),
+                })
         conf['layers'] = layers
         return conf
 
     @classmethod
     def from_config(cls, config):
-        config['layers'] = layers_from_config(config['layers'])
+        if not all([isinstance(l, int) for l in config['layers']]):
+            config['layers'] = layers_from_config(config['layers'])
         return cls(**config)
 
     def _check_y_shape(self, y):

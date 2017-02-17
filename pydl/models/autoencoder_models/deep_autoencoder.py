@@ -1,11 +1,10 @@
-import copy
-
 import keras.backend as K
 import keras.models as kmodels
 from keras.layers import Input, Dense
+from keras.regularizers import l1l2
 
 from ..base import UnsupervisedModel
-from pydl.utils.utilities import layers_from_config
+from pydl.utils.utilities import expand_arg, valid_act_functions
 
 
 class DeepAutoencoder(UnsupervisedModel):
@@ -15,21 +14,34 @@ class DeepAutoencoder(UnsupervisedModel):
 
     def __init__(self,
                  name='deep_ae',
-                 layers=None,
+                 n_hidden=list([]),
+                 enc_activation='relu',
+                 dec_activation='linear',
+                 l1_reg=0.0,
+                 l2_reg=0.0,
                  **kwargs):
 
         """
         :param layers: List of hidden layers
         """
 
-        self.layers = layers
-
-        super().__init__(name=name, **kwargs)
+        super().__init__(name=name,
+                         n_hidden=n_hidden,
+                         enc_activation=expand_arg(n_hidden, enc_activation),
+                         dec_activation=expand_arg(n_hidden, dec_activation),
+                         l1_reg=expand_arg(n_hidden, l1_reg),
+                         l2_reg=expand_arg(n_hidden, l2_reg),
+                         **kwargs)
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
 
     def validate_params(self):
-        assert self.layers is not None, 'Missing hidden layers!'
+        super().validate_params()
+        assert all([l > 0 for l in self.n_hidden]), 'Invalid hidden layers!'
+        assert all([f in valid_act_functions for f in self.enc_activation]), 'Invalid encoder activation function!'
+        assert all([f in valid_act_functions for f in self.dec_activation]), 'Invalid decoder activation function!'
+        assert all([x >= 0 for x in self.l1_reg]), 'Invalid l1_reg value!'
+        assert all([x >= 0 for x in self.l2_reg]), 'Invalid l2_reg value!'
 
     def _create_layers(self, input_layer):
 
@@ -41,17 +53,18 @@ class DeepAutoencoder(UnsupervisedModel):
         self.logger.info('Creating {} layers'.format(self.name))
 
         encode_layer = input_layer
-        for i, l in enumerate(copy.deepcopy(self.layers)):
-            l.name = 'encoder_%d' % i
-            encode_layer = l(encode_layer)
+        for i, l in enumerate(self.n_hidden):
+            encode_layer = Dense(output_dim=l,
+                                 name='encoder_%d' % i,
+                                 activation=self.enc_activation[i],
+                                 W_regularizer=l1l2(self.l1_reg[i], self.l2_reg[i]),
+                                 b_regularizer=l1l2(self.l1_reg[i], self.l2_reg[i]))(encode_layer)
 
         self._decode_layer = encode_layer
-        for i, l in enumerate(self.layers[-2:-(len(self.layers)+1):-1]):
-            l.name = 'decoder_%d' % i
-            self._decode_layer = l(self._decode_layer)
-
-        self._decode_layer = Dense(name='decoder_%d' % (len(self.layers)-1),
-                                   output_dim=K.int_shape(input_layer)[1])(self._decode_layer)
+        for i, l in enumerate(self.n_hidden[-2:-(len(self.n_hidden)+1):-1] + [K.int_shape(input_layer)[1]]):
+            self._decode_layer = Dense(output_dim=l,
+                                       name='decoder_%d' % i,
+                                       activation=self.dec_activation[i])(self._decode_layer)
 
     def _create_encoder_model(self):
 
@@ -97,19 +110,3 @@ class DeepAutoencoder(UnsupervisedModel):
         }
 
         return params
-
-    def get_config(self):
-        conf = super().get_config()
-        layers = []
-        for l in self.layers:
-            layers.append({
-                'class_name': l.__class__.__name__,
-                'config': l.get_config(),
-            })
-        conf['layers'] = layers
-        return conf
-
-    @classmethod
-    def from_config(cls, config):
-        config['layers'] = layers_from_config(config['layers'])
-        return cls(**config)

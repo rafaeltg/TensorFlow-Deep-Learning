@@ -32,19 +32,16 @@ def run_sdae():
 
     print('Creating Stacked Denoising Autoencoder')
     sdae = StackedAutoencoder(
-        layers=[
-            DenoisingAutoencoder(n_hidden=32,
-                                 enc_act_func='relu',
-                                 corr_type='masking',
-                                 corr_param=0.1),
-            DenoisingAutoencoder(n_hidden=16,
-                                 enc_act_func='relu',
-                                 corr_type='masking',
-                                 corr_param=0.1),
-            # Finetunning Output Layer
-            Dense(output_dim=y_train.shape[1],
-                  activation='linear')
+        layers=[DenoisingAutoencoder(n_hidden=32,
+                                     enc_act_func='relu',
+                                     corr_type='masking',
+                                     corr_param=0.1),
+                DenoisingAutoencoder(n_hidden=16,
+                                     enc_act_func='relu',
+                                     corr_type='masking',
+                                     corr_param=0.1)
         ],
+        num_epochs=100
     )
 
     print('Training')
@@ -65,12 +62,12 @@ def run_sdae():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    sdae.save_model('/home/rafael/models/', 'sdae')
-    assert os.path.exists('/home/rafael/models/sdae.json')
-    assert os.path.exists('/home/rafael/models/sdae.h5')
+    sdae.save_model('models/', 'sdae')
+    assert os.path.exists('models/sdae.json')
+    assert os.path.exists('models/sdae.h5')
 
     print('Loading model')
-    sdae_new = load_model('/home/rafael/models/sdae.json')
+    sdae_new = load_model('models/sdae.json')
 
     print('Calculating train score')
     assert train_score == sdae_new.score(x=x_train, y=y_train)

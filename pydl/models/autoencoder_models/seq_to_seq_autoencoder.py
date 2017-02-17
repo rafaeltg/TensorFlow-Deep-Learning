@@ -14,15 +14,15 @@ class SeqToSeqAutoencoder(Autoencoder):
                  name='ae',
                  n_hidden=32,
                  time_steps=1,
-                 enc_act_func='tanh',
-                 dec_act_func='tanh',
+                 enc_activation='tanh',
+                 dec_activation='tanh',
                  **kwargs):
 
         """
         :param n_hidden: number of hidden units
         :param time_steps:
-        :param enc_act_func: Activation function for the encoder.
-        :param dec_act_func: Activation function for the decoder.
+        :param enc_activation: Activation function for the encoder.
+        :param dec_activation: Activation function for the decoder.
         :param l1_reg: L1 weight regularization penalty, also known as LASSO.
         :param l2_reg: L2 weight regularization penalty, also known as weight decay, or Ridge.
         """
@@ -31,8 +31,8 @@ class SeqToSeqAutoencoder(Autoencoder):
 
         super().__init__(name=name,
                          n_hidden=n_hidden,
-                         enc_act_func=enc_act_func,
-                         dec_act_func=dec_act_func,
+                         enc_activation=enc_activation,
+                         dec_activation=dec_activation,
                          **kwargs)
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
@@ -51,13 +51,13 @@ class SeqToSeqAutoencoder(Autoencoder):
 
         encode_layer = LSTM(name='encoder',
                             output_dim=self.n_hidden,
-                            activation=self.enc_act_func)(input_layer)
+                            activation=self.enc_activation)(input_layer)
 
         n_inputs = K.int_shape(input_layer)[-1]
         decoded = RepeatVector(n=self.time_steps)(encode_layer)
         self._decode_layer = LSTM(name='decoder',
                                   output_dim=n_inputs,
-                                  activation=self.dec_act_func,
+                                  activation=self.dec_activation,
                                   return_sequences=True)(decoded)
 
     def _create_decoder_model(self):
@@ -74,7 +74,6 @@ class SeqToSeqAutoencoder(Autoencoder):
         decoder_layer = RepeatVector(n=self.time_steps)(encoded_input)
         decoder_layer = self._model.get_layer('decoder')(decoder_layer)
 
-        self._decoder = kmodels.Model(input=encoded_input,
-                                      output=decoder_layer)
+        self._decoder = kmodels.Model(input=encoded_input, output=decoder_layer)
 
         self.logger.info('Done creating {} decoding layer'.format(self.name))

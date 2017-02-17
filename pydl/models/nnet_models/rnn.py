@@ -1,5 +1,5 @@
-from keras.layers import Recurrent
 from ..base import SupervisedModel
+from keras.layers import Dense, Dropout, LSTM, GRU, SimpleRNN
 
 
 class RNN(SupervisedModel):
@@ -12,6 +12,9 @@ class RNN(SupervisedModel):
                  layers=None,
                  stateful=True,
                  time_steps=1,
+                 cell_type='lstm',
+                 activation='tanh',
+                 out_activation='linear',
                  **kwargs):
 
         """
@@ -21,13 +24,17 @@ class RNN(SupervisedModel):
             computed for the samples in one batch will be reused as initial states for the samples
             in the next batch.
         :param time_steps:
+        :param cell_type: Recurrent layers type. ["lstm", "gru", "simple"]
         """
 
         self.stateful = stateful
         self.time_steps = time_steps
+        self.cell_type = cell_type
 
         super().__init__(name=name,
                          layers=layers,
+                         activation=activation,
+                         out_activation=out_activation,
                          **kwargs)
 
         self.logger.info('Done {} __init__'.format(__class__.__name__))
@@ -35,28 +42,38 @@ class RNN(SupervisedModel):
     def validate_params(self):
         super().validate_params()
         assert self.time_steps > 0, "time_steps must be grater than zero!"
+        assert self.cell_type in ["lstm", "gru", "simple"], 'Invalid cell type!'
 
     def _create_layers(self, input_shape, n_output):
-        assert len(input_shape) == 3, 'Invalid input shape'
 
-        if isinstance(self.layers[0], Recurrent) and not hasattr(self.layers[0], 'batch_input_shape'):
-            b_size = self.batch_size if self.stateful else None
-            self.layers[0].batch_input_shape = (b_size, self.time_steps, input_shape[2])
+        """ Create the network layers
+        :param n_output:
+        :return: self
+        """
 
-        # Check return_sequences and stateful parameters
-        last_layer = True
-        for l in self.layers[::-1]:
-            if isinstance(l, Recurrent):
-                l.stateful = self.stateful
-                if last_layer:
-                    l.return_sequences = False
-                    last_layer = False
-                else:
-                    l.return_sequences = True
+        if self.cell_type == 'lstm':
+            cell = LSTM
+        elif self.cell_type == 'gru':
+            cell = GRU
+        else:
+            cell = SimpleRNN
 
-        # Add output layer
-        self._check_output_layer(n_output)
-        return self.layers
+        b_size = self.batch_size if self.stateful else None
+
+        # Hidden layers
+        for i, l in enumerate(self.layers):
+
+            self._model.add(cell(output_dim=l,
+                                 batch_input_shape=(b_size, input_shape[1], input_shape[2]),
+                                 activation=self.activation[i],
+                                 stateful=self.stateful,
+                                 return_sequences=True if i < (len(self.layers)-1) else False))
+
+            if self.dropout[i] > 0:
+                self._model.add(Dropout(p=self.dropout[i]))
+
+        # Output layer
+        self._model.add(Dense(output_dim=n_output, activation=self.out_activation))
 
     def _train_step(self, x_train, y_train, x_valid=None, y_valid=None):
 

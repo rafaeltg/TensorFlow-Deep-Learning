@@ -11,8 +11,8 @@ class DenoisingAutoencoder(Autoencoder):
     def __init__(self,
                  name='dae',
                  n_hidden=32,
-                 enc_act_func='relu',
-                 dec_act_func='linear',
+                 enc_activation='relu',
+                 dec_activation='linear',
                  l1_reg=0.0,
                  l2_reg=0.0,
                  corr_type='gaussian',
@@ -35,8 +35,8 @@ class DenoisingAutoencoder(Autoencoder):
 
         super().__init__(name=name,
                          n_hidden=n_hidden,
-                         enc_act_func=enc_act_func,
-                         dec_act_func=dec_act_func,
+                         enc_activation=enc_activation,
+                         dec_activation=dec_activation,
                          l1_reg=l1_reg,
                          l2_reg=l2_reg,
                          **kwargs)
@@ -46,8 +46,10 @@ class DenoisingAutoencoder(Autoencoder):
     def validate_params(self):
         super().validate_params()
         assert self.corr_type in ['masking', 'gaussian'], 'Invalid corruption type'
-        assert self.corr_param > 0 if self.corr_type == 'gaussian' else True, 'Invalid scale parameter for gaussian corruption'
-        assert 0 <= self.corr_param <= 1.0 if self.corr_type == 'masking' else True, 'Invalid keep_prob parameter for masking corruption'
+        if self.corr_type == 'gaussian':
+            assert self.corr_param > 0, 'Invalid scale parameter for gaussian corruption'
+        else:
+            assert 0 <= self.corr_param <= 1.0, 'Invalid keep_prob parameter for masking corruption'
 
     def _create_layers(self, input_layer):
 

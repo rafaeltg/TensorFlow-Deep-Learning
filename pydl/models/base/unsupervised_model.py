@@ -12,14 +12,24 @@ class UnsupervisedModel(Model):
     """ Class representing an abstract Unsupervised Model.
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self,
+                 n_hidden=None,
+                 enc_activation='relu',
+                 dec_activation='linear',
+                 l1_reg=0.0,
+                 l2_reg=0.0,
+                 **kwargs):
+
+        self.n_hidden = n_hidden
+        self.enc_activation = enc_activation
+        self.dec_activation = dec_activation
+        self.l1_reg = l1_reg
+        self.l2_reg = l2_reg
+
         super().__init__(**kwargs)
 
-        # Model input data
         self._input = None
-
         self._decode_layer = None
-
         self._encoder = None
         self._decoder = None
 

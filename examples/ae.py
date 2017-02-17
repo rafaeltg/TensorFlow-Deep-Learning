@@ -46,12 +46,12 @@ def run_ae():
     assert x_test_rec.shape == x_test.shape
 
     print('Saving model')
-    ae.save_model('/home/rafael/models/', 'ae')
-    assert os.path.exists('/home/rafael/models/ae.json')
-    assert os.path.exists('/home/rafael/models/ae.h5')
+    ae.save_model('models/', 'ae')
+    assert os.path.exists('models/ae.json')
+    assert os.path.exists('models/ae.h5')
 
     print('Loading model')
-    ae_new = load_model('/home/rafael/models/ae.json')
+    ae_new = load_model('models/ae.json')
 
     print('Transforming data')
     x_test_tr_new = ae_new.transform(data=x_test)

@@ -7,7 +7,6 @@ from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import StackedAutoencoder, Autoencoder
 from pydl.model_selection.cv_metrics import mape
 from pydl.utils.utilities import load_model
-from keras.layers import Dense
 
 
 def run_sae():
@@ -32,12 +31,9 @@ def run_sae():
 
     print('Creating Stacked Autoencoder')
     sae = StackedAutoencoder(
-        layers=[
-            Autoencoder(n_hidden=32, enc_act_func='relu'),
-            Autoencoder(n_hidden=16, enc_act_func='relu'),
-            # Finetunning Output Layer
-            Dense(output_dim=y_train.shape[1], activation='linear')
-        ],
+        layers=[Autoencoder(n_hidden=32, enc_act_func='relu'),
+                Autoencoder(n_hidden=16, enc_act_func='relu')],
+        num_epochs=100
     )
 
     print('Training')
@@ -58,12 +54,12 @@ def run_sae():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    sae.save_model('/home/rafael/models/', 'sae')
-    assert os.path.exists('/home/rafael/models/sae.json')
-    assert os.path.exists('/home/rafael/models/sae.h5')
+    sae.save_model('models/', 'sae')
+    assert os.path.exists('models/sae.json')
+    assert os.path.exists('models/sae.h5')
 
     print('Loading model')
-    sae_new = load_model('/home/rafael/models/sae.json')
+    sae_new = load_model('models/sae.json')
 
     print('Calculating train score')
     assert train_score == sae_new.score(x=x_train, y=y_train)
