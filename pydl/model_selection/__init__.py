@@ -1,3 +1,3 @@
-from .model_selection import *
-from .cv_methods import *
-from .cv_metrics import *
+from .cv import *
+from .methods import *
+from .metrics import *

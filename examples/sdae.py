@@ -5,7 +5,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
 from pydl.models import StackedAutoencoder, DenoisingAutoencoder
-from pydl.model_selection.cv_metrics import mape
+from pydl.model_selection.metrics import mape
 from pydl.utils.utilities import load_model
 from keras.layers import Dense
 

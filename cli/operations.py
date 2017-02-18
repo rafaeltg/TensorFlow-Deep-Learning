@@ -8,9 +8,9 @@ from pydl.optimizer.optimizer import CMAESOptimizer
 from pydl.optimizer.parameter_dictionary import ParameterDictionary
 from pydl.utils import datasets
 from pydl.utils.utilities import load_model, save_json
-from pydl.model_selection.cv_methods import get_cv_method
-from pydl.model_selection.cv_metrics import available_metrics
-from pydl.model_selection.model_selection import CV
+from pydl.model_selection.methods import get_cv_method
+from pydl.model_selection.metrics import available_metrics
+from pydl.model_selection.cv import CV
 
 
 def fit(config, output):

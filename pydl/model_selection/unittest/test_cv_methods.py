@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from pydl.model_selection.cv_methods import TrainTestSplitCV, TimeSeriesCV
+from pydl.model_selection.methods import TrainTestSplitCV, TimeSeriesCV
 
 
 class CVMethodsTestCase(unittest.TestCase):

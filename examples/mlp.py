@@ -3,7 +3,7 @@ import numpy as np
 
 from sklearn.preprocessing import MinMaxScaler
 from pydl.models import MLP
-from pydl.model_selection.cv_metrics import mape
+from pydl.model_selection.metrics import mape
 from pydl.utils.utilities import load_model
 from examples.synthetic import mackey_glass, create_dataset
 

@@ -5,8 +5,8 @@ from sklearn.preprocessing import MinMaxScaler
 from examples.synthetic import mackey_glass, create_dataset
 from pydl.optimizer.optimizer import CMAESOptimizer
 from pydl.optimizer.config_optimizer import *
-from pydl.model_selection.cv_methods import TrainTestSplitCV
-from pydl.model_selection.cv_metrics import rmse
+from pydl.model_selection.methods import TrainTestSplitCV
+from pydl.model_selection.metrics import rmse
 
 
 def run_optimizer():

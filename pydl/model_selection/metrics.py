@@ -1,7 +1,6 @@
 import numpy as np
 from sklearn import metrics
 
-
 def rmse(y_true, y_pred):
     """ Root Mean Squared Error	"""
 

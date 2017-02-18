@@ -2,8 +2,8 @@ import multiprocessing as mp
 import numpy as np
 
 from ..models.base import SupervisedModel
-from .cv_methods import *
-from .cv_metrics import available_metrics
+from .methods import *
+from .metrics import available_metrics
 
 
 class CV(object):
@@ -12,23 +12,20 @@ class CV(object):
         Cross-Validation
     """
 
-    def __init__(self, method=None, **kwargs):
-        assert method is not None, 'Missing method name!'
+    def __init__(self, method, **kwargs):
         self.cv = get_cv_method(method, **kwargs)
 
-    def run(self, model, x=None, y=None, metrics=list([]), max_thread=2):
+    def run(self, model, x, y=None, metrics=list([]), pp=None, max_thread=2):
 
         """
         :param model:
         :param x:
         :param y:
         :param metrics:
+        :param pp: Preprocessing object (sklearn.preprocessing)
         :param max_thread:
         :return:
         """
-
-        assert model is not None, 'Missing model!'
-        assert x is not None, 'Missing x!'
 
         metrics_fn = {}
         for m in metrics:
@@ -46,6 +43,7 @@ class CV(object):
                              y[train],
                              x[test],
                              y[test],
+                             pp,
                              metrics_fn))
         else:
             cv_fn = self._unsupervised_cv
@@ -62,7 +60,13 @@ class CV(object):
         return self._consolidate_cv_metrics(cv_results)
 
     @staticmethod
-    def _supervised_cv(model, x_train, y_train, x_test, y_test, metrics_fn):
+    def _supervised_cv(model, x_train, y_train, x_test, y_test, pp, metrics_fn):
+
+        # Data preprocessing
+        if pp:
+            x_train = pp.fit_transform(x_train)
+            x_test = pp.transform(x_test)
+
         model.fit(x_train=x_train, y_train=y_train)
 
         cv_result = {model.get_loss_func(): model.score(x_test, y_test)}
@@ -71,12 +75,16 @@ class CV(object):
             y_pred = model.predict(x_test)
 
             for k, fn in metrics_fn.items():
-                cv_result[k] = fn(y_test, y_pred)
+                if k == 'log_loss':
+                    res = fn(y_test, model.predict(x_test, predic_probs=True))
+                else:
+                    res = fn(y_test, y_pred)
+                cv_result[k] = res
 
         return cv_result
 
     @staticmethod
-    def _unsupervised_cv(model, x_train, x_test, metrics_fn):
+    def _unsupervised_cv(model, x_train, x_test, pp, metrics_fn):
         model.fit(x_train=x_train)
 
         cv_result = {model.get_loss_func(): model.score(x_test)}
