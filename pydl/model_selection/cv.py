@@ -54,8 +54,7 @@ class CV(object):
                              metrics_fn))
 
         with mp.Pool(max_thread) as pool:
-            cv_results = pool.starmap(func=cv_fn,
-                                      iterable=args)
+            cv_results = pool.starmap(func=cv_fn, iterable=args)
 
         return self._consolidate_cv_metrics(cv_results)
 

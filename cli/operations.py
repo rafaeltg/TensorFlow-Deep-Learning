@@ -4,8 +4,8 @@ import numpy as np
 
 from pydl.models.base.supervised_model import SupervisedModel
 from pydl.models.base.unsupervised_model import UnsupervisedModel
-from pydl.optimizer.optimizer import CMAESOptimizer
-from pydl.optimizer.parameter_dictionary import ParameterDictionary
+from pydl.hyperopt.optimizer import CMAESOptimizer
+from pydl.hyperopt.parameter_dictionary import ParameterDictionary
 from pydl.utils import datasets
 from pydl.utils.utilities import load_model, save_json
 from pydl.model_selection.methods import get_cv_method

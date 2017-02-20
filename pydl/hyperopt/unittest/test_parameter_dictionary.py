@@ -1,41 +1,9 @@
 import unittest
 
-from pydl.optimizer.parameter_dictionary import IntegerParameter, RealParameter, ListParameter, ParameterDictionary
+from pydl.hyperopt.parameter_dictionary import IntegerParameter, RealParameter, ListParameter, ParameterDictionary
 
 
 class ParameterDictionaryTestCase(unittest.TestCase):
-
-    def test_int_parameter(self):
-        min_v = 1
-        max_v = 10
-
-        p = IntegerParameter(min_value=min_v, max_value=max_v)
-
-        self.assertEqual(min_v, p.get_value(0))
-        self.assertEqual(max_v, p.get_value(1))
-        self.assertEqual(5, p.get_value(0.5))
-        self.assertRaises(AssertionError, p.get_value, 2)
-
-    def test_real_parameter(self):
-        min_v = 0
-        max_v = 1
-
-        p = RealParameter(min_value=min_v, max_value=max_v)
-
-        self.assertEqual(min_v, p.get_value(0))
-        self.assertEqual(max_v, p.get_value(1))
-        self.assertEqual(0.5, p.get_value(0.5))
-        self.assertRaises(AssertionError, p.get_value, 2)
-
-    def test_list_parameter(self):
-        values = ["a", "b", "c"]
-
-        p = ListParameter(values=values)
-
-        self.assertEqual(values[0], p.get_value(0))
-        self.assertEqual(values[2], p.get_value(1))
-        self.assertEqual(values[1], p.get_value(0.5))
-        self.assertRaises(AssertionError, p.get_value, 2)
 
     def test_add_parameter(self):
         d = ParameterDictionary()

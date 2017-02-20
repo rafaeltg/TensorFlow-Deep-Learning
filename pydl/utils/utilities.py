@@ -97,7 +97,6 @@ def layers_from_config(layers_config):
     return layers
 
 
-
 def expand_arg(layers, arg_to_expand):
 
     """Expands the arg_to_expand into the length of layers.
