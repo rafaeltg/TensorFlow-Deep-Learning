@@ -4,7 +4,6 @@ from sklearn.preprocessing import MinMaxScaler
 
 from examples.synthetic import mackey_glass, create_dataset
 from pydl.hyperopt import *
-from pydl.model_selection.methods import TrainTestSplitCV
 
 
 def run_optimizer():
@@ -21,7 +20,7 @@ def run_optimizer():
     x, y = create_dataset(ts, look_back=10)
 
     print('Creating MLP ConfigOptimizer')
-    space = HyperOptSpace({
+    space = hp_space({
         'model': {
             'class_name': 'MLP',
             'config': {
@@ -32,14 +31,14 @@ def run_optimizer():
         }
     })
 
-    print('Creating CV Method')
-    cv = TrainTestSplitCV(test_size=0.2)
+    print('Creating Fitness Function')
+    fit_fn = CVObjectiveFunction(cv='split')
 
     print('Creating CMAES optimizer')
-    opt = CMAESOptimizer(pop_size=10, max_iter=20)
+    opt = CMAESOptimizer(pop_size=4, max_iter=5)
 
     print('Creating HyperOptModel...')
-    model = HyperOptModel(hp_space=space, cv=cv, opt=opt)
+    model = HyperOptModel(hp_space=space, fit_fn=fit_fn, opt=opt)
 
     print('Optimizing!')
     res = model.fit(x, y)

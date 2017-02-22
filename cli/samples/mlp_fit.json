@@ -1,7 +1,7 @@
 {
   "model": {
-    "class": "MLP",
-    "params": {
+    "class_name": "MLP",
+    "config": {
       "name": "mlp_test",
       "layers": [50, 50, 25],
       "dropout": 0.2

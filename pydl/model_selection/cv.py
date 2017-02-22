@@ -15,7 +15,7 @@ class CV(object):
     def __init__(self, method, **kwargs):
         self.cv = get_cv_method(method, **kwargs)
 
-    def run(self, model, x, y=None, metrics=list([]), pp=None, max_thread=2):
+    def run(self, model, x, y=None, metrics=list([]), pp=None, max_thread=1):
 
         """
         :param model:
@@ -53,8 +53,14 @@ class CV(object):
                              x[test],
                              metrics_fn))
 
-        with mp.Pool(max_thread) as pool:
-            cv_results = pool.starmap(func=cv_fn, iterable=args)
+        cv_results = []
+        if max_thread == 1:
+            for fn_args in args:
+                cv_results.append(cv_fn(*fn_args))
+
+        else:
+            with mp.Pool(max_thread) as pool:
+                cv_results = pool.starmap(func=cv_fn, iterable=args)
 
         return self._consolidate_cv_metrics(cv_results)
 

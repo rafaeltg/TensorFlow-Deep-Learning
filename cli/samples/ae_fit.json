@@ -1,7 +1,7 @@
 {
   "model": {
-    "class": "Autoencoder",
-    "params": {
+    "class_name": "Autoencoder",
+    "config": {
       "name": "ae_test",
       "n_hidden": 10
     }

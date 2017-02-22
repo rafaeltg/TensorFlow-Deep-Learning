@@ -54,14 +54,14 @@ class ParametersTestCase(unittest.TestCase):
         space = hp_space({
             'model': hp_choice([
                 {
-                    'class_name': 'MLP',
+                    'class_name': 'MLP1',
                     'config': {
                         'layers': [hp_int(10, 100), hp_int(10, 100)],
                         'activation': hp_choice(['relu', 'sigmoid', 'tanh'])
                     }
                 },
                 {
-                    'class_name': 'MLP',
+                    'class_name': 'MLP2',
                     'config': {
                         'layers': [hp_int(10, 100)],
                         'activation': hp_choice(['relu', 'sigmoid', 'tanh'])
@@ -70,6 +70,17 @@ class ParametersTestCase(unittest.TestCase):
             ])
         })
         self.assertEqual(space.size, 4)
+
+        expected_config = {
+            'model': {
+                'class_name': 'MLP1',
+                'config': {
+                    'layers': [10, 10],
+                    'activation': 'tanh'
+                }
+            }
+        }
+        self.assertDictEqual(expected_config, space.get_value([0,0,0,1]))
 
 
 if __name__ == '__main__':

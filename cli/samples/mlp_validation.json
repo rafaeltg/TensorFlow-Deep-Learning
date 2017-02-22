@@ -1,7 +1,7 @@
 {
   "model": {
-    "class": "MLP",
-    "params": {
+    "class_nmae": "MLP",
+    "config": {
       "layers": [32, 16]
     }
   },
