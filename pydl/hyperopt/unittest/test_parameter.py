@@ -54,17 +54,17 @@ class ParametersTestCase(unittest.TestCase):
         space = hp_space({
             'model': hp_choice([
                 {
-                    'class_name': 'MLP1',
-                    'config': {
-                        'layers': [hp_int(10, 100), hp_int(10, 100)],
-                        'activation': hp_choice(['relu', 'sigmoid', 'tanh'])
+                    "class_name": 'MLP1',
+                    "config": {
+                        "activation": hp_choice(['relu', 'sigmoid', 'tanh']),
+                        "layers": [hp_int(10, 100), hp_int(10, 100)]
                     }
                 },
                 {
-                    'class_name': 'MLP2',
-                    'config': {
-                        'layers': [hp_int(10, 100)],
-                        'activation': hp_choice(['relu', 'sigmoid', 'tanh'])
+                    "class_name": 'MLP2',
+                    "config": {
+                        "activation": hp_choice(['relu', 'sigmoid', 'tanh']),
+                        "layers": [hp_int(10, 100)]
                     }
                 }
             ])
@@ -75,12 +75,61 @@ class ParametersTestCase(unittest.TestCase):
             'model': {
                 'class_name': 'MLP1',
                 'config': {
-                    'layers': [10, 10],
-                    'activation': 'tanh'
+                    'activation': 'sigmoid',
+                    'layers': [10, 100]
                 }
             }
         }
-        self.assertDictEqual(expected_config, space.get_value([0,0,0,1]))
+
+        self.assertDictEqual(expected_config, space.get_value([0, 0.5, 0, 1]))
+
+    def test_hp_space_from_json(self):
+
+        hp_space_json = {
+            "model": {
+                "class_name": "MLP",
+                "config": {
+                    "name": "mlp_opt",
+                    "layers": {
+                        "node_type": "hp_list",
+                        "value": [
+                            {
+                                "node_type": "hp_int",
+                                "min_val": 10,
+                                "max_val": 100
+                            },
+                            {
+                                "node_type": "hp_int",
+                                "min_val": 10,
+                                "max_val": 100
+                            }
+                        ]
+                    },
+                    "dropout": {
+                        "node_type": "hp_float",
+                        "min_val": 0,
+                        "max_val": 0.3
+                    }
+                }
+            }
+        }
+
+        space = hp_space_from_json(hp_space_json)
+
+        self.assertEqual(space.size, 3)
+
+        expected_config = {
+            'model': {
+                'class_name': 'MLP',
+                'config': {
+                    'dropout': 0.0,
+                    'name': 'mlp_opt',
+                    'layers': [55, 100]
+                }
+            }
+        }
+
+        self.assertDictEqual(expected_config, space.get_value([0, 0.5, 1]))
 
 
 if __name__ == '__main__':

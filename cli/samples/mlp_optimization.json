@@ -1,16 +1,30 @@
 {
-  "model": {
-    "class_name": "MLP",
-    "config": {
-      "name": "mlp_opt",
-      "layers": {
-        "type": "list",
-        "values": [
-          { "type": "int", "min_val": 10, "max_val": 100 },
-          { "type": "int", "min_val": 10, "max_val": 100 }
-        ]
-      },
-      "dropout": { "type": "real", "min_value": 0, "max_value": 0.3 }
+  "hp_space": {
+    "model": {
+      "class_name": "MLP",
+      "config": {
+        "name": "mlp_opt",
+        "layers": {
+          "node_type": "hp_list",
+          "value": [
+            {
+              "node_type": "hp_int",
+              "min_val": 10,
+              "max_val": 100
+            },
+            {
+              "node_type": "hp_int",
+              "min_val": 10,
+              "max_val": 100
+            }
+          ]
+        },
+        "dropout": {
+          "node_type": "hp_float",
+          "min_val": 0,
+          "max_val": 0.3
+        }
+      }
     }
   },
 
@@ -18,17 +32,15 @@
     "method": "cmaes",
     "params": {
       "pop_size": 5,
-      "max_iter": 3
-    }
-  },
-
-  "obj_fn": {
-    "type": "cv",
-    "method": "split",
-    "params": {
-      "test_size": 0.3
+      "max_iter": 5
     },
-    "metric": "rmse"
+    "obj_fn": {
+      "type": "cv",
+      "method": "split",
+      "params": {
+        "test_size": 0.3
+      }
+    }
   },
 
   "data_set": {

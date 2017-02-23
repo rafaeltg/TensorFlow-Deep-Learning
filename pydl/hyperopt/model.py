@@ -39,15 +39,15 @@ class HyperOptModel(object):
     def best_model(self):
         return self._best_model
 
-    def fit(self, x, y=None, retrain=False):
+    def fit(self, x, y=None, retrain=False, max_threads=4):
 
         args = (self._hp_space, x, y) + self._fit_fn.args
-        res = self._opt.optimize(x0=[0]*self.hp_space.size, obj_func=self._fit_fn.obj_fn, args=args)
+        res = self._opt.optimize(x0=[0]*self.hp_space.size, obj_func=self._fit_fn.obj_fn, args=args, max_thread=max_threads)
         best_config = self._hp_space.get_value(res[0])
         self._best_model = load_model(best_config)
 
         if retrain:
-            if y:
+            if y is not None:
                 self._best_model.fit(x, y)
             else:
                 self._best_model.fit(x)

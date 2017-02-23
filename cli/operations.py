@@ -4,11 +4,9 @@ import numpy as np
 
 from pydl.models.base.supervised_model import SupervisedModel
 from pydl.models.base.unsupervised_model import UnsupervisedModel
-from pydl.hyperopt.optimizer import CMAESOptimizer
-from pydl.hyperopt.parameter_dictionary import ParameterDictionary
+from pydl.hyperopt import HyperOptModel, hp_space_from_json, opt_from_config, CVObjectiveFunction
 from pydl.utils import datasets
 from pydl.utils.utilities import load_model, save_json
-from pydl.model_selection.methods import get_cv_method
 from pydl.model_selection.metrics import available_metrics
 from pydl.model_selection.cv import CV
 
@@ -146,46 +144,31 @@ def validate(config, output):
 
 
 def optimize(config, output):
-    """
-    """
 
     print('optimize', config)
 
-    m = load_model(config)
+    # Get hp_space
+    assert 'hp_space' in config, 'Missing hyperparameters space definition'
+    space = hp_space_from_json(config['hp_space'])
 
+    # Get data
     data_set = get_input_data(config)
     x = load_data(data_set, 'data_x')
-    y = load_data(data_set, 'data_y') if isinstance(m, SupervisedModel) else None
+    y = load_data(data_set, 'data_y') if 'data_y' in data_set else None
 
-    assert 'params' in config, "Missing list of parameters to optimize"
-    opt_params = ParameterDictionary()
-    opt_params.from_json(config['params'])
+    # Get HyperOptModel
+    assert 'opt' in config, 'Missing optimizer parameters!'
+    opt = get_optimizer(config['opt'])
+    obj_fn = get_obj_fn(config['opt'])
 
-    method, params, _ = get_cv_config(config)
-    cv_method = get_cv_method(method=method, **params)
+    opt_model = HyperOptModel(hp_space=space, fit_fn=obj_fn, opt=opt)
+    result = opt_model.fit(x, y, retrain=True)
 
-    fit_fn = available_metrics[config['cv']['metric']]
+    print('\n>> Best params =', result['best_model_config'])
+    print('\n>> Best fit =', result['opt_result'][1])
 
-    opt = get_optimizer(config, cv_method, fit_fn)
-
-    result = opt.run(model=m,
-                     params_dict=opt_params,
-                     x=x,
-                     y=y,
-                     max_thread=4)
-
-    best_params = opt_params.get(x=result[0])
-    print('best params =', best_params)
-
-    # fit the model with the best parameters using all data
-    m.set_params(**best_params)
-    if isinstance(m, SupervisedModel):
-        m.fit(x_train=x, y_train=y)
-    else:
-        m.fit(x_train=x)
-
-    # Save model
-    m.save_model(output)
+    # Save best model
+    opt_model.best_model.save_model(output)
 
 
 #
@@ -218,14 +201,17 @@ def get_cv_config(config):
     return method, params, metrics
 
 
-def get_optimizer(config, cv, fit_fn):
-    assert 'opt' in config, 'Missing optimizer parameters!'
-    opt_config = config['opt']
-    assert 'method' in opt_config, 'Missing optimization method'
-    method = opt_config['method']
-    params = opt_config['params'] if 'params' in opt_config else {}
+def get_optimizer(config):
+    assert 'method' in config, 'Missing optimization method'
+    method = config['method']
+    params = config['params'] if 'params' in config else {}
+    return opt_from_config(method, **params)
 
-    if method == 'cmaes':
-        return CMAESOptimizer(cv=cv, fit_fn=fit_fn, **params)
-    else:
-        raise AttributeError('Invalid optimizer method')
+
+def get_obj_fn(config):
+    if 'obj_fn' in config:
+        obj_fn_config = config['obj_fn']
+        cv_method = obj_fn_config['method']
+        cv_params = obj_fn_config['params'] if 'params' in obj_fn_config else {}
+        return CVObjectiveFunction(cv_method, **cv_params)
+    return None

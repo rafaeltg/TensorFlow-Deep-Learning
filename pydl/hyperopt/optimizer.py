@@ -2,7 +2,7 @@ import cma
 import multiprocessing as mp
 
 
-class CMAESOptimizer(object):
+class CMAESOptimizer:
 
     def __init__(self, pop_size=10, sigma0=0.5, max_iter=50, verbose=-9):
         assert pop_size > 0, 'pop_size must be greater than zero'
