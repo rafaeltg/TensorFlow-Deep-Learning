@@ -3,6 +3,9 @@ import json
 import importlib
 import numpy as np
 from keras.utils.layer_utils import layer_from_config
+import sys
+import inspect
+
 
 valid_act_functions = ['softmax', 'softplus', 'sigmoid', 'tanh', 'relu', 'linear']
 
@@ -61,15 +64,12 @@ def load_model(config=None):
 
 def model_from_config(config):
     assert 'class_name' in config, 'Missing model class!'
-    class_name = config['class_name']
-    model_config = config['config'] if 'config' in config else {}
+    return layer_from_config(config, get_available_models())
 
-    models = importlib.import_module('.models', 'pydl')
-    if hasattr(models, class_name):
-        model_class = getattr(models, class_name)
-        return model_class.from_config(model_config)
 
-    return None
+def get_available_models():
+    models = inspect.getmembers(sys.modules['pydl.models'], inspect.isclass)
+    return {m[0]: m[1] for m in models}
 
 
 def load_json(inp):
@@ -85,16 +85,6 @@ def load_json(inp):
 def save_json(data, file_path):
     with open(file_path, 'w') as outfile:
         json.dump(data, outfile, sort_keys=False, indent=4, ensure_ascii=False)
-
-
-def layers_from_config(layers_config):
-    layers = []
-    for l in layers_config:
-        layer = model_from_config(l)
-        if layer is None:
-            layer = layer_from_config(l)
-        layers.append(layer)
-    return layers
 
 
 def expand_arg(layers, arg_to_expand):

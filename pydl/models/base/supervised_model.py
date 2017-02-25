@@ -1,6 +1,6 @@
 import numpy as np
 from .model import Model
-from pydl.utils.utilities import layers_from_config, expand_arg, valid_act_functions
+from pydl.utils.utilities import model_from_config, expand_arg, valid_act_functions
 from keras.models import Sequential
 from keras.utils.np_utils import to_categorical
 
@@ -152,8 +152,13 @@ class SupervisedModel(Model):
 
     @classmethod
     def from_config(cls, config):
-        if not all([isinstance(l, int) for l in config['layers']]):
-            config['layers'] = layers_from_config(config['layers'])
+        layers = []
+        for l in config['layers']:
+            if isinstance(l, dict):
+                layers.append(model_from_config(l))
+            else:
+                layers.append(l)
+        config['layers'] = layers
         return cls(**config)
 
     def _check_y_shape(self, y):

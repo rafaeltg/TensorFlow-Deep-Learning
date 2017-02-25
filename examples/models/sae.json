@@ -1,0 +1,71 @@
+{
+    "weights": "models/sae.h5",
+    "model": {
+        "class_name": "StackedAutoencoder",
+        "config": {
+            "learning_rate": 0.001,
+            "seed": -1,
+            "opt": "adam",
+            "name": "sae",
+            "verbose": 0,
+            "out_activation": "linear",
+            "l2_reg": [
+                0,
+                0
+            ],
+            "activation": [
+                "relu",
+                "relu"
+            ],
+            "batch_size": 32,
+            "num_epochs": 100,
+            "dropout": [
+                0,
+                0
+            ],
+            "layers": [
+                {
+                    "class_name": "Autoencoder",
+                    "config": {
+                        "learning_rate": 0.001,
+                        "seed": -1,
+                        "opt": "adam",
+                        "name": "ae",
+                        "verbose": 0,
+                        "n_hidden": 32,
+                        "l2_reg": 0.0,
+                        "enc_activation": "relu",
+                        "batch_size": 32,
+                        "num_epochs": 100,
+                        "dec_activation": "linear",
+                        "loss_func": "mse",
+                        "l1_reg": 0.0
+                    }
+                },
+                {
+                    "class_name": "Autoencoder",
+                    "config": {
+                        "learning_rate": 0.001,
+                        "seed": -1,
+                        "opt": "adam",
+                        "name": "ae",
+                        "verbose": 0,
+                        "n_hidden": 16,
+                        "l2_reg": 0.0,
+                        "enc_activation": "relu",
+                        "batch_size": 32,
+                        "num_epochs": 100,
+                        "dec_activation": "linear",
+                        "loss_func": "mse",
+                        "l1_reg": 0.0
+                    }
+                }
+            ],
+            "loss_func": "mse",
+            "l1_reg": [
+                0,
+                0
+            ]
+        }
+    }
+}

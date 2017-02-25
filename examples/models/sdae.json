@@ -1,0 +1,75 @@
+{
+    "model": {
+        "class_name": "StackedAutoencoder",
+        "config": {
+            "l2_reg": [
+                0,
+                0
+            ],
+            "name": "sae",
+            "activation": [
+                "relu",
+                "relu"
+            ],
+            "seed": -1,
+            "num_epochs": 100,
+            "batch_size": 32,
+            "out_activation": "linear",
+            "learning_rate": 0.001,
+            "opt": "adam",
+            "loss_func": "mse",
+            "l1_reg": [
+                0,
+                0
+            ],
+            "dropout": [
+                0,
+                0
+            ],
+            "verbose": 0,
+            "layers": [
+                {
+                    "class_name": "DenoisingAutoencoder",
+                    "config": {
+                        "dec_activation": "linear",
+                        "l2_reg": 0.0,
+                        "num_epochs": 100,
+                        "seed": -1,
+                        "name": "dae",
+                        "corr_param": 0.1,
+                        "learning_rate": 0.001,
+                        "n_hidden": 32,
+                        "corr_type": "masking",
+                        "opt": "adam",
+                        "batch_size": 32,
+                        "l1_reg": 0.0,
+                        "enc_activation": "relu",
+                        "verbose": 0,
+                        "loss_func": "mse"
+                    }
+                },
+                {
+                    "class_name": "DenoisingAutoencoder",
+                    "config": {
+                        "dec_activation": "linear",
+                        "l2_reg": 0.0,
+                        "num_epochs": 100,
+                        "seed": -1,
+                        "name": "dae",
+                        "corr_param": 0.1,
+                        "learning_rate": 0.001,
+                        "n_hidden": 16,
+                        "corr_type": "masking",
+                        "opt": "adam",
+                        "batch_size": 32,
+                        "l1_reg": 0.0,
+                        "enc_activation": "relu",
+                        "verbose": 0,
+                        "loss_func": "mse"
+                    }
+                }
+            ]
+        }
+    },
+    "weights": "models/sdae.h5"
+}

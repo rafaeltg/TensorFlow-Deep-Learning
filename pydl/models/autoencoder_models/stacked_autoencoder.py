@@ -48,7 +48,7 @@ class StackedAutoencoder(SupervisedModel):
             self._model.add(Dense(input_shape=[input_shape[1] if i == 0 else None],
                                   output_dim=l.n_hidden,
                                   weights=l.get_model_parameters()['enc'],
-                                  activation=l.enc_act_func,
+                                  activation=l.enc_activation,
                                   W_regularizer=l1l2(l.l1_reg, l.l2_reg),
                                   b_regularizer=l1l2(l.l1_reg, l.l2_reg)))
 

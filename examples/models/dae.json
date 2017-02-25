@@ -1,0 +1,23 @@
+{
+    "model": {
+        "class_name": "DenoisingAutoencoder",
+        "config": {
+            "corr_param": 0.1,
+            "n_hidden": 15,
+            "l2_reg": 0.0,
+            "l1_reg": 0.0,
+            "learning_rate": 0.001,
+            "seed": -1,
+            "dec_activation": "linear",
+            "enc_activation": "relu",
+            "verbose": 0,
+            "batch_size": 32,
+            "loss_func": "mse",
+            "opt": "adam",
+            "name": "dae",
+            "num_epochs": 100,
+            "corr_type": "gaussian"
+        }
+    },
+    "weights": "models/dae.h5"
+}
