@@ -2,42 +2,25 @@ from ..models.utils import load_model
 from ..model_selection import CV
 
 
-class ObjectiveFunction:
+class CVObjectiveFunction:
 
-    def __init__(self):
-        self._args = ()
+    def __init__(self, scoring=None, cv_method='split', **kwargs):
+        self._cv = CV(method=cv_method, **kwargs)
+        self._scoring = scoring
 
     @property
     def args(self):
-        return self._args
+        return tuple([self._cv, self._scoring])
 
-    @property
-    def obj_fn(self):
-        return self._obj_fn
+    def obj_fn(self, x, *args):
+        hp_space = args[0]
+        X = args[1]
+        Y = args[2]
 
-    @staticmethod
-    def _obj_fn(x):
-        pass
-
-
-class CVObjectiveFunction(ObjectiveFunction):
-
-    def __init__(self, scoring=None, cv_method='split', **kwargs):
-        super().__init__()
-        self._args += tuple([CV(method=cv_method, **kwargs), scoring])
-
-    @staticmethod
-    def child_initialize(_hp_space, _x, _y, _cv, _scoring):
-        global hp_space, data_x, data_y, cv, scoring
-        hp_space = _hp_space
-        data_x = _x
-        data_y = _y
-        cv = _cv
-        scoring = _scoring
-
-    @staticmethod
-    def _obj_fn(x):
         m = load_model(hp_space.get_value(x))
-        res = cv.run(model=m, x=data_x, y=data_y, scoring=scoring, max_threads=1)
-        s = cv.get_scorer_name(scoring) if scoring is not None else m.get_loss_func()
+        res = self._cv.run(model=m, x=X, y=Y, scoring=self._scoring)
+        s = self._cv.get_scorer_name(self._scoring) if self._scoring is not None else m.get_loss_func()
         return res[s]['mean']
+
+    def __call__(self, x, *args):
+        self.obj_fn(x, *args)

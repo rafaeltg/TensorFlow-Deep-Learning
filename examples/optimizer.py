@@ -49,11 +49,8 @@ def run_optimizer():
     print('Creating Fitness Function')
     fit_fn = CVObjectiveFunction(scoring='mse')
 
-    print('Creating CMAES optimizer')
-    opt = CMAESOptimizer(pop_size=8, max_iter=4)
-
     print('Creating HyperOptModel...')
-    m = HyperOptModel(hp_space=space, fit_fn=fit_fn, opt=opt)
+    m = HyperOptModel(hp_space=space, fit_fn=fit_fn, opt='cmaes', opt_args={'pop_size': 8, 'max_iter': 4})
 
     print('Optimizing!')
     res = m.fit(x, y, max_threads=4)

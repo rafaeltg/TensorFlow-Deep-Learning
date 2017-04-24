@@ -2,21 +2,31 @@ import cma
 import multiprocessing as mp
 
 
-class CMAESOptimizer:
+class Optimizer:
 
-    def __init__(self, pop_size=10, sigma0=0.5, max_iter=50, verbose=-9):
-        assert pop_size > 0, 'pop_size must be greater than zero'
-        assert sigma0 > 0 if isinstance(sigma0, float) else True, 'sigma0 must be greater than zero'
-        assert max_iter > 0, 'max_iter must be greater than zero'
-
-        self.pop_size = pop_size
+    def __init__(self, max_iter=25, verbose=-9, **kwargs):
+        assert max_iter > 0, 'max_iter must be greater than zero!'
         self.max_iter = max_iter
-        self.sigma0 = sigma0
         self.verbose = verbose
-        self.child_initializer = None
+
+    def optimize(self, x0, obj_func, args=(), max_threads=1):
+        pass
+
+
+class CMAESOptimizer(Optimizer):
+
+    def __init__(self, max_iter=25, verbose=-9, **kwargs):
+        self.super().__init__(max_iter=max_iter, verbose=verbose, **kwargs)
+
+        self.pop_size = int(kwargs.get('pop_size', 20)) if 'pop_size' in kwargs else 20
+        assert self.pop_size > 0, 'pop_size must be greater than zero'
+
+        self.sigma0 = float(kwargs.get('sigma0', 0.5)) if 'sigma0' in kwargs else 0.5
+        assert self.sigma0 > 0, 'sigma0 must be greater than zero'
 
     def optimize(self, x0, obj_func, args=(), max_threads=1):
         assert max_threads > 0, 'Invalid number of threads!'
+        assert len(args) >= 3, 'args must contain at least hp_space, data_X and data_Y'
 
         # TODO: 'AdaptSigma' option
         es = cma.CMAEvolutionStrategy(x0=x0,
@@ -35,8 +45,10 @@ class CMAESOptimizer:
             while not es.stop():
                 X = es.ask()
                 
-                with mp.Pool(max_threads, initializer=self.child_initializer, initargs=args) as pool:
-                    f_values = pool.map_async(obj_func, X, chunksize=es.popsize//max_threads).get()
+                with mp.Pool(max_threads) as pool:
+                    f_values = pool.starmap(func=obj_func,
+                                            iterable=[(_x, *args) for _x in X],
+                                            chunksize=es.popsize//max_threads)
 
                 es.tell(X, f_values)
                 es.disp()
@@ -46,7 +58,6 @@ class CMAESOptimizer:
 
 
 def opt_from_config(algo, **kwargs):
-
     if algo == 'cmaes':
         return CMAESOptimizer(**kwargs)
 

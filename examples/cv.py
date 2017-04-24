@@ -1,5 +1,4 @@
 import json
-from sklearn.preprocessing import MinMaxScaler
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.models import MLP
 from pydl.model_selection import CV
@@ -22,7 +21,7 @@ def run_cv():
               nb_epochs=100)
 
     print('Creating TrainTestSplitCV method')
-    cv = CV(method='split', test_size=0.2)
+    #cv = CV(method='split', test_size=0.2)
 
     print('Running CV!')
     #res = cv.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'])
@@ -30,11 +29,13 @@ def run_cv():
     print('CV results:')
     #print(json.dumps(res, indent=4, separators=(',', ': ')))
 
+    #del cv, res
+
     print('\nCreating TimeSeriesCV method')
-    cv = CV(method='time_series', window=1000, horizon=100, by=100, fixed=False)
+    cv_par = CV(method='time_series', window=2100, horizon=100, by=100, fixed=False)
 
     print('Running CV!')
-    res = cv.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'], pp=MinMaxScaler(), max_threads=4)
+    res = cv_par.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'], max_threads=4)
 
     print('CV results:')
     print(json.dumps(res, indent=4, separators=(',', ': ')))
