@@ -9,3 +9,4 @@ keras
 cma
 yahoo_finance
 tensorflow
+joblib
