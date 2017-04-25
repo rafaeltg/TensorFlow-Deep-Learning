@@ -1,4 +1,3 @@
-from pydl.hyperopt import opt_from_config, CVObjectiveFunction
 from pydl.datasets.utils import load_data_file
 
 
@@ -29,22 +28,3 @@ def get_cv_config(config):
     scoring = cv_config['scoring'] if 'scoring' in cv_config else None
     max_threads = cv_config['max_threads'] if 'max_threads' in cv_config else 1
     return method, params, scoring, max_threads
-
-
-def get_optimizer(config):
-    assert 'method' in config, 'Missing optimization method'
-    method = config['method']
-    m = method['class']
-    params = method['params'] if 'params' in method else {}
-    return opt_from_config(m, **params)
-
-
-def get_obj_fn(config):
-    if 'obj_fn' in config:
-        obj_fn_config = config['obj_fn']
-
-        if 'cv' in obj_fn_config:
-            method, params, scoring, _ = get_cv_config(obj_fn_config)
-            return CVObjectiveFunction(scoring=scoring, cv_method=method, **params)
-
-    return None

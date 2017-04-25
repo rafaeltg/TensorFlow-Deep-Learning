@@ -52,3 +52,6 @@ class HyperOptModel(object):
             'opt_result': res,
             'best_model_config': self._best_config
         }
+
+    def save_model(self, path=None, file_name=None):
+        self._best_model.save_model(path, file_name)
