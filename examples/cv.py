@@ -2,6 +2,7 @@ import json
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.models import MLP
 from pydl.model_selection import CV
+import gc
 
 
 def run_cv():
@@ -12,7 +13,7 @@ def run_cv():
 
     print('Creating dataset')
     # Create time series data
-    ts = mackey_glass(sample_len=3000)
+    ts = mackey_glass(sample_len=2000)
     x, y = create_dataset(ts, look_back=10)
 
     print('Creating MLP')
@@ -21,21 +22,21 @@ def run_cv():
               nb_epochs=100)
 
     print('Creating TrainTestSplitCV method')
-    #cv = CV(method='split', test_size=0.2)
+    cv = CV(method='split', test_size=0.2)
 
     print('Running CV!')
-    #res = cv.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'])
+    res = cv.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'])
 
     print('CV results:')
-    #print(json.dumps(res, indent=4, separators=(',', ': ')))
-
-    #del cv, res
+    print(json.dumps(res, indent=4, separators=(',', ': ')))
 
     print('\nCreating TimeSeriesCV method')
-    cv_par = CV(method='time_series', window=2100, horizon=100, by=100, fixed=False)
+    cv = CV(method='time_series', window=1100, horizon=100, by=100, fixed=False)
+
+    gc.collect()
 
     print('Running CV!')
-    res = cv_par.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'], max_threads=4)
+    res = cv.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'], max_threads=4)
 
     print('CV results:')
     print(json.dumps(res, indent=4, separators=(',', ': ')))

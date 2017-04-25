@@ -1,12 +1,10 @@
-import os
-import shutil
-import tempfile
+import gc
 import numpy as np
-from joblib import load, dump
-from joblib.parallel import Parallel, delayed
+import multiprocessing as mp
 from .methods import get_cv_method
 from .scorer import get_scorer
 from ..models.utils import model_from_config
+from ..utils import dump_np_data_set, free_mmap_data_set
 
 
 class CV(object):
@@ -18,7 +16,7 @@ class CV(object):
     def __init__(self, method, **kwargs):
         self.cv = get_cv_method(method, **kwargs)
 
-    def run(self, model, x, y=None, scoring=None, max_threads=1):
+    def run(self, model, x, y=None, scoring=None, max_threads=1, in_memory=False):
 
         # get scorers
         if scoring is not None:
@@ -30,39 +28,32 @@ class CV(object):
             # By default uses the model loss function as scoring function
             scorers_fn = dict([(model.get_loss_func(), get_scorer(model.get_loss_func()))])
 
-        tmp_folder = tempfile.mkdtemp(dir='/dev/shm')
-
         try:
             model_cfg = model.to_json()
-            x = self._dump(x, os.path.join(tmp_folder, 'x.mmap'))
+
+            if in_memory:
+                x, y = dump_np_data_set(x, y)
+                gc.collect()
 
             if y is None:
                 args = [(model_cfg, train, test, x, scorers_fn) for train, test in self.cv.split(x, y)]
                 cv_fn = self._do_unsupervised_cv
             else:
-                y = self._dump(y, os.path.join(tmp_folder, 'y.mmap'))
                 args = [(model_cfg, train, test, x, y, scorers_fn) for train, test in self.cv.split(x, y)]
                 cv_fn = self._do_supervised_cv
 
-            max_threads = min(max_threads, len(args))
-            with Parallel(n_jobs=max_threads, temp_folder=tmp_folder, max_nbytes=None) as parallel:
-                cv_results = parallel(delayed(cv_fn)(*_args) for _args in args)
+            if max_threads == 1:
+                cv_results = [cv_fn(*a) for a in args]
+            else:
+                max_threads = min(max_threads, len(args))
+                with mp.Pool(max_threads) as pool:
+                    cv_results = pool.starmap(func=cv_fn, iterable=args, chunksize=len(args)//max_threads)
 
         finally:
-            try:
-                shutil.rmtree(tmp_folder)
-            except:
-                print("Failed to delete: " + tmp_folder)
+            if in_memory:
+                free_mmap_data_set(x, y)
 
         return self._consolidate_cv_scores(cv_results)
-
-    @staticmethod
-    def _dump(var, file_path):
-        mmap_file = os.path.join(file_path)
-        if os.path.exists(mmap_file):
-            os.unlink(mmap_file)
-        dump(var, mmap_file)
-        return load(mmap_file, mmap_mode='r')
 
     @staticmethod
     def _do_supervised_cv(model_cfg, train, test, x, y, scorers_fn):
@@ -80,7 +71,8 @@ class CV(object):
         cv_result = dict([(k, scorer(model, x_test)) for k, scorer in scorers_fn.items()])
         return cv_result
 
-    def _consolidate_cv_scores(self, cv_results):
+    @staticmethod
+    def _consolidate_cv_scores(cv_results):
         cv_scores = {}
         for k in cv_results[0].keys():
             scores = [result[k] for result in cv_results]
@@ -91,7 +83,8 @@ class CV(object):
             }
         return cv_scores
 
-    def get_scorer_name(self, scorer):
+    @staticmethod
+    def get_scorer_name(scorer):
         if isinstance(scorer, str):
             return scorer
         elif hasattr(scorer, '__call__'):

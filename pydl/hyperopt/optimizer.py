@@ -1,5 +1,6 @@
 import cma
 import multiprocessing as mp
+import sys
 
 
 class Optimizer:
@@ -16,7 +17,7 @@ class Optimizer:
 class CMAESOptimizer(Optimizer):
 
     def __init__(self, max_iter=25, verbose=-9, **kwargs):
-        self.super().__init__(max_iter=max_iter, verbose=verbose, **kwargs)
+        super().__init__(max_iter=max_iter, verbose=verbose, **kwargs)
 
         self.pop_size = int(kwargs.get('pop_size', 20)) if 'pop_size' in kwargs else 20
         assert self.pop_size > 0, 'pop_size must be greater than zero'
@@ -44,7 +45,7 @@ class CMAESOptimizer(Optimizer):
             max_threads = min(self.pop_size, max_threads)
             while not es.stop():
                 X = es.ask()
-                
+
                 with mp.Pool(max_threads) as pool:
                     f_values = pool.starmap(func=obj_func,
                                             iterable=[(_x, *args) for _x in X],

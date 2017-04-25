@@ -12,15 +12,18 @@ class CVObjectiveFunction:
     def args(self):
         return tuple([self._cv, self._scoring])
 
-    def obj_fn(self, x, *args):
+    @staticmethod
+    def obj_fn(x, *args):
         hp_space = args[0]
         X = args[1]
         Y = args[2]
+        cv = args[3]
+        scoring = args[4]
 
         m = load_model(hp_space.get_value(x))
-        res = self._cv.run(model=m, x=X, y=Y, scoring=self._scoring)
-        s = self._cv.get_scorer_name(self._scoring) if self._scoring is not None else m.get_loss_func()
+        res = cv.run(model=m, x=X, y=Y, scoring=scoring)
+        s = cv.get_scorer_name(scoring) if scoring is not None else m.get_loss_func()
         return res[s]['mean']
 
     def __call__(self, x, *args):
-        self.obj_fn(x, *args)
+        return self.obj_fn(x, *args, self._cv, self._scoring)

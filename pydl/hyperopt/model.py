@@ -1,11 +1,8 @@
-import sys
-import os
-import tempfile
-import shutil
-from joblib import load, dump
 from ..models import load_model
+from ..utils import dump_np_data_set, free_mmap_data_set
 from .objective import CVObjectiveFunction
 from .optimizer import opt_from_config
+import gc
 
 
 class HyperOptModel(object):
@@ -25,28 +22,20 @@ class HyperOptModel(object):
     def best_model(self):
         return self._best_model
 
-    @staticmethod
-    def _dump(var, file_path):
-        mmap_file = os.path.join(file_path)
-        if os.path.exists(mmap_file):
-            os.unlink(mmap_file)
-        dump(var, mmap_file)
-        return load(mmap_file, mmap_mode='r')
-
-    def fit(self, x, y=None, retrain=False, max_threads=1):
-
-        tmp_folder = tempfile.mkdtemp(dir='/dev/shm')
+    def fit(self, x, y=None, retrain=False, max_threads=1, in_memory=True):
 
         try:
-            x = self._dump(x, os.path.join(tmp_folder, 'x.mmap'))
-            y = self._dump(y, os.path.join(tmp_folder, 'y.mmap')) if y is not None else None
-            print(sys.getsizeof(self._hp_space))
+            if in_memory:
+                x, y = dump_np_data_set(x, y)
+                gc.collect()
 
-            res = self._opt.optimize(obj_func=self._fit_fn,
-                                     args=(self._hp_space, x, y),
-                                     max_threads=max_threads)
+            res = self._opt.optimize(
+                x0=[0] * self._hp_space.size,
+                obj_func=self._fit_fn.obj_fn,
+                args=(self._hp_space, x, y) + self._fit_fn.args,
+                max_threads=max_threads)
 
-            self._best_config = self._hp_space.get(res[0])
+            self._best_config = self._hp_space.get_value(res[0])
             self._best_model = load_model(self._best_config)
 
             if retrain:
@@ -56,10 +45,8 @@ class HyperOptModel(object):
                     self._best_model.fit(x)
 
         finally:
-            try:
-                shutil.rmtree(tmp_folder)
-            except:
-                print("Failed to delete: " + tmp_folder)
+            if in_memory:
+                free_mmap_data_set(x, y)
 
         return {
             'opt_result': res,
