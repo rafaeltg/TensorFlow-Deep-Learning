@@ -1,6 +1,5 @@
 import cma
-import multiprocessing as mp
-import sys
+from joblib import Parallel, delayed
 
 
 class Optimizer:
@@ -46,10 +45,8 @@ class CMAESOptimizer(Optimizer):
             while not es.stop():
                 X = es.ask()
 
-                with mp.Pool(max_threads) as pool:
-                    f_values = pool.starmap(func=obj_func,
-                                            iterable=[(_x, *args) for _x in X],
-                                            chunksize=es.popsize//max_threads)
+                with Parallel(n_jobs=max_threads) as parallel:
+                    f_values = parallel(delayed(function=obj_func, check_pickle=False)(_x, *args) for _x in X)
 
                 es.tell(X, f_values)
                 es.disp()

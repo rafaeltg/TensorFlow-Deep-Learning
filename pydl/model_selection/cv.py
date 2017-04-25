@@ -1,6 +1,6 @@
 import gc
 import numpy as np
-import multiprocessing as mp
+from joblib import Parallel, delayed
 from .methods import get_cv_method
 from .scorer import get_scorer
 from ..models.utils import model_from_config
@@ -42,12 +42,9 @@ class CV(object):
                 args = [(model_cfg, train, test, x, y, scorers_fn) for train, test in self.cv.split(x, y)]
                 cv_fn = self._do_supervised_cv
 
-            if max_threads == 1:
-                cv_results = [cv_fn(*a) for a in args]
-            else:
-                max_threads = min(max_threads, len(args))
-                with mp.Pool(max_threads) as pool:
-                    cv_results = pool.starmap(func=cv_fn, iterable=args, chunksize=len(args)//max_threads)
+            max_threads = min(max_threads, len(args))
+            with Parallel(n_jobs=max_threads) as parallel:
+                cv_results = parallel(delayed(function=cv_fn, check_pickle=False)(*a) for a in args)
 
         finally:
             if in_memory:
