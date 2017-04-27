@@ -1,8 +1,9 @@
+import os
+import gc
 from ..models import load_model
 from ..utils import dump_np_data_set, free_mmap_data_set
 from .objective import CVObjectiveFunction
 from .optimizer import opt_from_config
-import gc
 
 
 class HyperOptModel(object):
@@ -52,6 +53,3 @@ class HyperOptModel(object):
             'opt_result': res,
             'best_model_config': self._best_config
         }
-
-    def save_model(self, path=None, file_name=None):
-        self._best_model.save_model(path, file_name)

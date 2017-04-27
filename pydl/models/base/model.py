@@ -87,32 +87,6 @@ class Model:
     def get_model_parameters(self):
         pass
 
-    def save_model(self, path=None, file_name=None):
-        assert path is not None, 'Missing output path!'
-
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-        if file_name is None:
-            file_name = self.name
-
-        w_file = os.path.join(path, file_name + '.h5')
-        configs = {
-            'model': self.to_json(),
-            'weights': w_file
-        }
-
-        k_models.save_model(model=self._model, filepath=w_file)
-        save_json(configs, os.path.join(path, file_name + '.json'))
-
-    def load_model(self, model_path, custom_objs=None):
-        file_path = model_path
-        if os.path.isdir(model_path):
-            file_path = os.path.join(model_path, self.name+'.h5')
-
-        assert os.path.isfile(file_path), 'Missing file - %s' % file_path
-        self._model = k_models.load_model(filepath=file_path, custom_objects=custom_objs)
-
     @classmethod
     def from_config(cls, config):
         return cls(**config)
@@ -156,6 +130,19 @@ class Model:
 
     def to_json(self):
         return {
-            'class_name': self.__class__.__name__,
-            'config': self.get_config()
+            'model': {
+                'class_name': self.__class__.__name__,
+                'config': self.get_config()
+            }
         }
+
+    def load_model(self, model_path, custom_objs=None):
+        file_path = model_path
+        if os.path.isdir(model_path):
+            file_path = os.path.join(model_path, self.name+'.h5')
+
+        assert os.path.isfile(file_path), 'Missing file - %s' % file_path
+        self._model = k_models.load_model(filepath=file_path, custom_objects=custom_objs)
+
+    def is_built(self):
+        return self._model is not None

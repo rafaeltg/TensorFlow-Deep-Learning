@@ -1,4 +1,5 @@
 from .utils import get_input_data, load_data, get_cv_config
+from pydl.models import save_model
 from pydl.hyperopt import HyperOptModel, hp_space_from_json, CVObjectiveFunction
 
 
@@ -27,7 +28,7 @@ def optimize(config, output):
     opt_model.fit(x, y, retrain=retrain, max_threads=max_threads)
 
     # Save best model
-    opt_model.save_model(output)
+    save_model(opt_model.best_model, output)
 
 
 def get_optimizer(config):

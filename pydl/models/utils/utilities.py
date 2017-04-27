@@ -45,6 +45,22 @@ def expand_arg(layers, arg_to_expand):
     return result
 
 
+def save_model(model, dir=None, file_name=None):
+    if dir is None:
+        dir = os.getcwd()
+
+    if file_name is None:
+        file_name = model.name
+
+    cfg = model.to_json()
+
+    if model.is_built():
+        cfg['weights'] = os.path.join(dir, file_name + '.h5')
+        k_models.save_model(getattr(model, '_model'), cfg['weights'])
+
+    save_json(cfg, os.path.join(dir, file_name+'.json'))
+
+
 def load_model(config=None):
     assert config is not None, 'Missing input configuration'
 
