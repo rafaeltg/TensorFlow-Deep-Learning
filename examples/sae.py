@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.model_selection.metrics import mape
 from pydl.models import StackedAutoencoder, Autoencoder
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_sae():
@@ -29,8 +29,8 @@ def run_sae():
 
     print('Creating Stacked Autoencoder')
     sae = StackedAutoencoder(
-        layers=[Autoencoder(n_hidden=32, enc_act_func='relu'),
-                Autoencoder(n_hidden=16, enc_act_func='relu')],
+        layers=[Autoencoder(n_hidden=32, enc_activation='relu'),
+                Autoencoder(n_hidden=16, enc_activation='relu')],
         nb_epochs=100
     )
 
@@ -52,7 +52,7 @@ def run_sae():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    sae.save_model('models/', 'sae')
+    save_model(sae, 'models/', 'sae')
     assert os.path.exists('models/sae.json')
     assert os.path.exists('models/sae.h5')
 

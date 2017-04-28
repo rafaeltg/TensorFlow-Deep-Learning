@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.model_selection.metrics import mape
 from pydl.models import StackedAutoencoder, DenoisingAutoencoder
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_sdae():
@@ -30,11 +30,11 @@ def run_sdae():
     print('Creating Stacked Denoising Autoencoder')
     sdae = StackedAutoencoder(
         layers=[DenoisingAutoencoder(n_hidden=32,
-                                     enc_act_func='relu',
+                                     enc_activation='relu',
                                      corr_type='masking',
                                      corr_param=0.1),
                 DenoisingAutoencoder(n_hidden=16,
-                                     enc_act_func='relu',
+                                     enc_activation='relu',
                                      corr_type='masking',
                                      corr_param=0.1)
         ],
@@ -59,7 +59,7 @@ def run_sdae():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    sdae.save_model('models/', 'sdae')
+    save_model(sdae, 'models/', 'sdae')
     assert os.path.exists('models/sdae.json')
     assert os.path.exists('models/sdae.h5')
 

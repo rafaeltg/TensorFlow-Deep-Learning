@@ -1,6 +1,6 @@
 from .utils import get_input_data, load_data, get_model
 from pydl.models import SupervisedModel
-from pydl.models.utils.utilities import load_model
+from pydl.models.utils.utilities import load_model, save_model
 
 
 def fit(config, output):
@@ -19,4 +19,4 @@ def fit(config, output):
         m.fit(x_train=x)
 
     # Save model
-    m.save_model(output)
+    save_model(model=m, dir=output)

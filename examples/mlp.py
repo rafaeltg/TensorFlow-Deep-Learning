@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.model_selection.metrics import mape
 from pydl.models import MLP
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_mlp():
@@ -57,7 +57,7 @@ def run_mlp():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    mlp.save_model('models/', 'mlp')
+    save_model(mlp, 'models/', 'mlp')
     assert os.path.exists('models/mlp.json')
     assert os.path.exists('models/mlp.h5')
 

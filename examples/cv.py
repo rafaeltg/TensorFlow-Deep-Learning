@@ -2,7 +2,6 @@ import json
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.models import MLP
 from pydl.model_selection import CV
-import gc
 
 
 def run_cv():
@@ -32,8 +31,6 @@ def run_cv():
 
     print('\nCreating TimeSeriesCV method')
     cv = CV(method='time_series', window=1100, horizon=100, by=100, fixed=False)
-
-    gc.collect()
 
     print('Running CV!')
     res = cv.run(model=mlp, x=x, y=y, scoring=['mape', 'rmse'], max_threads=4)

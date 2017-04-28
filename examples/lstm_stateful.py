@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.model_selection.metrics import mape
 from pydl.models import RNN
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_lstm_stateful():
@@ -58,7 +58,7 @@ def run_lstm_stateful():
     print('MAPE for y_test forecasting = {}'.format(y_test_mape))
 
     print('Saving model')
-    lstm.save_model('models/', 'lstm_stateful')
+    save_model(lstm, 'models/', 'lstm_stateful')
     assert os.path.exists('models/lstm_stateful.json')
     assert os.path.exists('models/lstm_stateful.h5')
 

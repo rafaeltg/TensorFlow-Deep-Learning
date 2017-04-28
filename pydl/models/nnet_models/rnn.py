@@ -88,7 +88,7 @@ class RNN(SupervisedModel):
                 self._model.fit(x=x_train,
                                 y=y_train,
                                 batch_size=self.batch_size,
-                                nb_epoch=1,
+                                epochs=1,
                                 shuffle=False,
                                 validation_data=valid_data,
                                 verbose=self.verbose)

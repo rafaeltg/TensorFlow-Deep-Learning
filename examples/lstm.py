@@ -4,7 +4,7 @@ from sklearn.preprocessing import MinMaxScaler
 from pydl.datasets import mackey_glass, create_dataset
 from pydl.model_selection import r2_score
 from pydl.models import RNN
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_lstm():
@@ -58,7 +58,7 @@ def run_lstm():
     print('r2_score for y_test forecasting = {}'.format(y_test_r2))
 
     print('Saving model')
-    lstm.save_model('models/', 'lstm')
+    save_model(lstm, 'models/', 'lstm')
     assert os.path.exists('models/lstm.json')
     assert os.path.exists('models/lstm.h5')
 

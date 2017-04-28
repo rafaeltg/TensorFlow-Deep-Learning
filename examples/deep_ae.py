@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from pydl.models import DeepAutoencoder
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_deep_ae():
@@ -44,7 +44,7 @@ def run_deep_ae():
     assert x_test_rec.shape == x_test.shape
 
     print('Saving model')
-    deep_ae.save_model('models/', 'deep_ae')
+    save_model(deep_ae, 'models/', 'deep_ae')
     assert os.path.exists('models/deep_ae.json')
     assert os.path.exists('models/deep_ae.h5')
 

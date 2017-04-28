@@ -48,6 +48,8 @@ def expand_arg(layers, arg_to_expand):
 def save_model(model, dir=None, file_name=None):
     if dir is None:
         dir = os.getcwd()
+    elif not os.path.exists(dir):
+        os.makedirs(dir)
 
     if file_name is None:
         file_name = model.name

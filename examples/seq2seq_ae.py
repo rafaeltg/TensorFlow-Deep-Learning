@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from pydl.models import SeqToSeqAutoencoder
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_seq2seq_ae():
@@ -46,7 +46,7 @@ def run_seq2seq_ae():
     assert x_test_rec.shape == x_test.shape
 
     print('Saving model')
-    s2s_ae.save_model('models/', 's2s_ae')
+    save_model(s2s_ae, 'models/', 's2s_ae')
     assert os.path.exists('models/s2s_ae.json')
     assert os.path.exists('models/s2s_ae.h5')
 

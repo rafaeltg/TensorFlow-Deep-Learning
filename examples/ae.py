@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from pydl.models.autoencoder_models import Autoencoder
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_ae():
@@ -44,7 +44,7 @@ def run_ae():
     assert x_test_rec.shape == x_test.shape
 
     print('Saving model')
-    ae.save_model('models/', 'ae')
+    save_model(ae, 'models/', 'ae')
     assert os.path.exists('models/ae.json')
     assert os.path.exists('models/ae.h5')
 

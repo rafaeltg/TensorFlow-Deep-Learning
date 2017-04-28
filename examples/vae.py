@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from pydl.models import VariationalAutoencoder
-from pydl.models.utils import load_model
+from pydl.models.utils import load_model, save_model
 
 
 def run_vae():
@@ -46,12 +46,12 @@ def run_vae():
     assert x_test_rec.shape == x_test.shape
 
     print('Saving model')
-    vae.save_model('/home/rafael/models/', 'vae')
-    assert os.path.exists('/home/rafael/models/vae.json')
-    assert os.path.exists('/home/rafael/models/vae.h5')
+    save_model(vae, 'models/', 'vae')
+    assert os.path.exists('models/vae.json')
+    assert os.path.exists('models/vae.h5')
 
     print('Loading model')
-    vae_new = load_model('/home/rafael/models/vae.json')
+    vae_new = load_model('models/vae.json')
 
     print('Transforming data')
     x_test_tr_new = vae_new.transform(data=x_test)

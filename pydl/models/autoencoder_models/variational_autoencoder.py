@@ -1,10 +1,8 @@
-import keras.models as kmodels
 from keras import backend as K
 from keras import objectives
 from keras.layers import Input, Dense, Lambda
-
+import keras.models as kmodels
 from ..base import UnsupervisedModel
-from ..utils import valid_act_functions
 
 
 class VariationalAutoencoder(UnsupervisedModel):
@@ -16,34 +14,29 @@ class VariationalAutoencoder(UnsupervisedModel):
                  name='vae',
                  n_latent=10,
                  n_hidden=64,
-                 enc_act_func='relu',
-                 dec_act_func='relu',
+                 enc_activation='relu',
+                 dec_activation='relu',
                  **kwargs):
 
         """
         :param n_latent: number of units in the latent layer
         :param n_hidden: number of hidden units
-        :param enc_act_func: Activation function for the encoder.
-        :param dec_act_func: Activation function for the decoder.
+        :param enc_activation: Activation function for the encoder.
+        :param dec_activation: Activation function for the decoder.
         """
 
         self.n_latent = n_latent
-        self.n_hidden = n_hidden
-        self.enc_act_func = enc_act_func
-        self.dec_act_func = dec_act_func
 
         super().__init__(name=name,
+                         n_hidden=n_hidden,
+                         enc_activation=enc_activation,
+                         dec_activation=dec_activation,
                          loss_func=self._vae_loss,
                          **kwargs)
-
-        self.n_inputs = None
 
     def validate_params(self):
         super().validate_params()
         assert self.n_latent > 0
-        assert self.n_hidden > 0
-        assert self.enc_act_func in valid_act_functions
-        assert self.dec_act_func in valid_act_functions
 
     def _create_layers(self, input_layer):
 
@@ -51,11 +44,11 @@ class VariationalAutoencoder(UnsupervisedModel):
         :return: self
         """
 
-        self.n_inputs = K.int_shape(input_layer)[1]
+        n_inputs = K.int_shape(input_layer)[1]
 
         # Encode layers
         encode_layer = Dense(units=self.n_hidden,
-                             activation=self.enc_act_func)(input_layer)
+                             activation=self.enc_activation)(input_layer)
 
         z_mean = Dense(name='z_mean', units=self.n_latent)(encode_layer)
         z_log_var = Dense(name='z_log_var', units=self.n_latent)(encode_layer)
@@ -64,9 +57,9 @@ class VariationalAutoencoder(UnsupervisedModel):
 
         # Decode layers
         self._decode_layer = Dense(units=self.n_hidden,
-                                   activation=self.dec_act_func)(z)
+                                   activation=self.dec_activation)(z)
 
-        self._decode_layer = Dense(units=self.n_inputs, activation='linear')(self._decode_layer)
+        self._decode_layer = Dense(units=n_inputs, activation='linear')(self._decode_layer)
 
     def _create_encoder_model(self):
 
@@ -90,7 +83,7 @@ class VariationalAutoencoder(UnsupervisedModel):
         decoder_layer = self._model.layers[-1](decoder_layer)
 
         # create the decoder model
-        self._decoder = kmodels.Model(input=encoded_input, output=decoder_layer)
+        self._decoder = kmodels.Model(inputs=encoded_input, outputs=decoder_layer)
 
     @staticmethod
     def _sampling(args):
@@ -99,10 +92,11 @@ class VariationalAutoencoder(UnsupervisedModel):
         return z_mean + K.exp(z_log_var / 2) * epsilon
 
     def _vae_loss(self, x, x_decoded_mean):
+        n_inputs = self._model.get_input_shape_at(0)[1]
         z_mean = self._model.get_layer('z_mean').inbound_nodes[0].output_tensors[0]
         z_log_var = self._model.get_layer('z_log_var').inbound_nodes[0].output_tensors[0]
 
-        xent_loss = self.n_inputs * objectives.binary_crossentropy(x, x_decoded_mean)
+        xent_loss = n_inputs * objectives.binary_crossentropy(x, x_decoded_mean)
         kl_loss = - 0.5 * K.sum(1 + z_log_var
                                 - K.square(z_mean)
                                 - K.exp(z_log_var), axis=-1)
