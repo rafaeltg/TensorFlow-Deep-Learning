@@ -36,10 +36,10 @@ class CV(object):
                 gc.collect()
 
             if y is None:
-                args = [(model_cfg, train, test, x, scorers_fn) for train, test in self.cv.split(x, y)]
+                args = [(model_cfg['model'], train, test, x, scorers_fn) for train, test in self.cv.split(x, y)]
                 cv_fn = self._do_unsupervised_cv
             else:
-                args = [(model_cfg, train, test, x, y, scorers_fn) for train, test in self.cv.split(x, y)]
+                args = [(model_cfg['model'], train, test, x, y, scorers_fn) for train, test in self.cv.split(x, y)]
                 cv_fn = self._do_supervised_cv
 
             max_threads = min(max_threads, len(args))
