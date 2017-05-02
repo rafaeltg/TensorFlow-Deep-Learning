@@ -14,11 +14,7 @@ class CVObjectiveFunction:
 
     @staticmethod
     def obj_fn(x, *args):
-        hp_space = args[0]
-        X = args[1]
-        Y = args[2]
-        cv = args[3]
-        scoring = args[4]
+        hp_space, X, Y, cv, scoring = args
 
         m = load_model(hp_space.get_value(x))
         res = cv.run(model=m, x=X, y=Y, scoring=scoring)

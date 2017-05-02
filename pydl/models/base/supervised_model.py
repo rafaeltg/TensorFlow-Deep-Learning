@@ -91,7 +91,6 @@ class SupervisedModel(Model):
         self._train_step(x_train, y_train, valid_data, valid_split)
 
     def _train_step(self, x_train, y_train, valid_data=None, valid_split=0.):
-
         self._model.fit(x=x_train,
                         y=y_train,
                         batch_size=self.batch_size,

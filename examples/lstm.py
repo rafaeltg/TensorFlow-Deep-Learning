@@ -33,11 +33,11 @@ def run_lstm():
 
     print('Creating a stateless LSTM')
     lstm = RNN(layers=[50, 50],
-               dropout=[0.1, 0.2],
+               dropout=[0., 0.2],
                stateful=False,
                time_steps=1,
                cell_type='lstm',
-               nb_epochs=300,
+               nb_epochs=400,
                batch_size=100)
 
     print('Training')
