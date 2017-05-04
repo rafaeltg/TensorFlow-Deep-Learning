@@ -37,14 +37,14 @@ def run_lstm_stateful():
                time_steps=1,
                cell_type='lstm',
                dropout=[0.1, 0.1],
-               nb_epochs=20,
+               nb_epochs=100,
                batch_size=1,
                early_stopping=True,
-               min_delta=1e5,
-               patient=5)
+               min_delta=1e-5,
+               patient=15)
 
     print('Training')
-    lstm.fit(x_train=x_train, y_train=y_train)
+    lstm.fit(x_train=x_train, y_train=y_train, valid_split=.05)
 
     train_score = lstm.score(x=x_train, y=y_train)
     print('Train score = {}'.format(train_score))

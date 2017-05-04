@@ -100,13 +100,12 @@ class RNN(SupervisedModel):
 
     def _train_step(self, x_train, y_train, valid_data=None, valid_split=0.):
         if self.stateful:
+
             for cb in self._callbacks:
                 cb.set_model(self._model.model.callback_model)
                 cb.on_train_begin()
 
-            last = 0
             for i in range(self.nb_epochs):
-                print('%d / %d' % (i, self.nb_epochs))
                 logs = self._model.fit(x=x_train,
                                        y=y_train,
                                        batch_size=self.batch_size,
@@ -116,10 +115,6 @@ class RNN(SupervisedModel):
                                        validation_split=valid_split,
                                        verbose=self.verbose)
                 self._model.reset_states()
-
-                print(logs.history['val_loss'][0])
-                print(last - logs.history['val_loss'][0])
-                last = logs.history['val_loss'][0]
 
                 for cb in self._callbacks:
                     cb.on_epoch_end(epoch=i, logs={'val_loss': logs.history['val_loss'][0]})

@@ -37,8 +37,8 @@ def run_lstm():
                stateful=False,
                time_steps=1,
                cell_type='lstm',
-               nb_epochs=400,
-               batch_size=100)
+               nb_epochs=100,
+               batch_size=50)
 
     print('Training')
     lstm.fit(x_train=x_train, y_train=y_train)

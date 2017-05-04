@@ -50,7 +50,7 @@ class Model:
         self.early_stopping = early_stopping
         self.patient = patient
         self.min_delta = min_delta
-        self._callbacks = [EarlyStopping(min_delta=self.min_delta, patience=self.patient)] if self.early_stopping else None
+        self._callbacks = [EarlyStopping(min_delta=self.min_delta, patience=self.patient)] if self.early_stopping else []
 
         self.seed = seed
         if self.seed >= 0:

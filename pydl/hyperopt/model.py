@@ -1,4 +1,3 @@
-import os
 import gc
 from ..models import load_model
 from ..utils import dump_np_data_set, free_mmap_data_set
