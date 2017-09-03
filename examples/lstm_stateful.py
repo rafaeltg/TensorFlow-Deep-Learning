@@ -57,8 +57,8 @@ def run_lstm_stateful():
 
     assert y_test_pred.shape == y_test.shape
 
-    y_test_mape = r2_score(y_test, y_test_pred)
-    print('R² for y_test forecasting = {}'.format(y_test_mape))
+    y_test_r2 = r2_score(y_test, y_test_pred)
+    print('R² for y_test forecasting = {}'.format(y_test_r2))
 
     print('Saving model')
     save_model(lstm, 'models/', 'lstm_stateful')
@@ -79,7 +79,7 @@ def run_lstm_stateful():
     assert np.array_equal(y_test_pred, y_test_pred_new)
 
     print('Calculating R²')
-    assert y_test_mape == r2_score(y_test, y_test_pred_new)
+    assert y_test_r2 == r2_score(y_test, y_test_pred_new)
 
 
 if __name__ == '__main__':

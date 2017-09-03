@@ -6,3 +6,4 @@ from .autoencoder_models import *
 from .base import *
 from .nnet_models import *
 from .utils import *
+from .custom import RFM

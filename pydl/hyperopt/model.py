@@ -1,6 +1,4 @@
-import gc
 from ..models import load_model
-from ..utils import dump_np_data_set, free_mmap_data_set
 from .objective import CVObjectiveFunction
 from .optimizer import opt_from_config
 
@@ -22,31 +20,22 @@ class HyperOptModel(object):
     def best_model(self):
         return self._best_model
 
-    def fit(self, x, y=None, retrain=False, max_threads=1, in_memory=True):
+    def fit(self, x, y=None, retrain=False, max_threads=1):
 
-        try:
-            if in_memory:
-                x, y = dump_np_data_set(x, y)
-                gc.collect()
+        res = self._opt.optimize(
+            x0=[0] * self._hp_space.size,
+            obj_func=self._fit_fn.obj_fn,
+            args=(self._hp_space, x, y) + self._fit_fn.args,
+            max_threads=max_threads)
 
-            res = self._opt.optimize(
-                x0=[0] * self._hp_space.size,
-                obj_func=self._fit_fn.obj_fn,
-                args=(self._hp_space, x, y) + self._fit_fn.args,
-                max_threads=max_threads)
+        self._best_config = self._hp_space.get_value(res[0])
+        self._best_model = load_model(self._best_config)
 
-            self._best_config = self._hp_space.get_value(res[0])
-            self._best_model = load_model(self._best_config)
-
-            if retrain:
-                if y is not None:
-                    self._best_model.fit(x, y)
-                else:
-                    self._best_model.fit(x)
-
-        finally:
-            if in_memory:
-                free_mmap_data_set(x, y)
+        if retrain:
+            if y is not None:
+                self._best_model.fit(x, y)
+            else:
+                self._best_model.fit(x)
 
         return {
             'opt_result': res,

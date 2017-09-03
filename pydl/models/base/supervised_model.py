@@ -168,10 +168,7 @@ class SupervisedModel(Model):
             if isinstance(l, int):
                 layers.append(l)
             else:
-                layers.append({
-                    'class_name': l.__class__.__name__,
-                    'config': l.get_config(),
-                })
+                layers.append(l.to_json()['model'])
         conf['layers'] = layers
         return conf
 

@@ -45,7 +45,7 @@ class CMAESOptimizer(Optimizer):
             while not es.stop():
                 X = es.ask()
 
-                with Parallel(n_jobs=max_threads) as parallel:
+                with Parallel(n_jobs=max_threads, batch_size=1) as parallel:
                     f_values = parallel(delayed(function=obj_func, check_pickle=False)(_x, *args) for _x in X)
 
                 es.tell(X, f_values)

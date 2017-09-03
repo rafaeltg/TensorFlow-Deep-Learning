@@ -2,7 +2,7 @@ import os
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from pydl.datasets import mackey_glass, create_dataset
-from pydl.model_selection.metrics import mape
+from pydl.model_selection.metrics import r2_score
 from pydl.models import MLP
 from pydl.models.utils import load_model, save_model
 
@@ -53,8 +53,8 @@ def run_mlp():
     print('Predicted y_test shape = {}'.format(y_test_pred.shape))
     assert y_test_pred.shape == y_test.shape
 
-    y_test_mape = mape(y_test, y_test_pred)
-    print('MAPE for y_test forecasting = {}'.format(y_test_mape))
+    y_test_r2 = r2_score(y_test, y_test_pred)
+    print('R2 for y_test forecasting = {}'.format(y_test_r2))
 
     print('Saving model')
     save_model(mlp, 'models/', 'mlp')
@@ -75,7 +75,7 @@ def run_mlp():
     assert np.array_equal(y_test_pred, y_test_pred_new)
 
     print('Calculating MAPE')
-    assert y_test_mape == mape(y_test, y_test_pred_new)
+    assert y_test_r2 == r2_score(y_test, y_test_pred_new)
 
 
 if __name__ == '__main__':

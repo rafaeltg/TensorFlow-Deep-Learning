@@ -29,7 +29,7 @@ def create_dataset(ts, look_back=1, time_ahead=1):
     return np.array(data_x), np.array(data_y)
 
 
-def get_stock_historical_data(symbol, start, end, ascending=True, usecols=None):
+def get_stock_historical_data_old(symbol, start, end, ascending=True, usecols=None):
 
     """
     :param symbol: stock ticker.
@@ -45,6 +45,28 @@ def get_stock_historical_data(symbol, start, end, ascending=True, usecols=None):
     data = Share(symbol).get_historical(start, end)
     df = pd.DataFrame(data).set_index(['Date']).drop('Symbol', 1).astype(np.float64).sort_index(ascending=ascending)
     return df if usecols is None else df[usecols]
+
+
+def get_stock_historical_data(symbol, start, end, ascending=True, usecols=None):
+
+    """
+    :param symbol: stock ticker.
+    :param start: string date in format 'yyyy-mm-dd' ('2009-09-11').
+    :param end: string date in format 'yyyy-mm-dd' ('2010-09-11').
+    :param ascending: sort returning values in ascending or descending order based on Date column.
+    :param usecols: List of columns to return. If None, return all columns.
+    :return: DataFrame
+    """
+
+    from pandas_datareader import data as pdr
+    import fix_yahoo_finance as yf
+    yf.pdr_override()
+
+    hist_data = pdr.get_data_yahoo(symbol, start, end)
+    hist_data = hist_data[usecols]
+
+    all_weekdays = pd.date_range(start=start, end=end, freq='B')
+    return hist_data.reindex(all_weekdays).sort_index(ascending=ascending)
 
 
 def get_return(x, periods=1):
@@ -83,18 +105,33 @@ def decompose(ts, plot=False):
     return trend, seasonal, residual
 
 
-def acf(ts, nlags=20, plot=False):
+def acf(ts, nlags=20, plot=False, ax=None):
+
+    """
+
+    :param ts: time series
+    :param nlags: number of lags to calculate the acf
+    :param plot: whether to plot the acf pr not
+    :param ax: custom plot axes
+    :return:
+        - acf value for each lag
+        - confidence level value
+        - plotted ax (if 'plot' is true)
+    """
+
     from statsmodels.tsa.stattools import acf
 
     lag_acf = acf(ts, nlags=nlags)
     conf_level = 1.96/np.sqrt(len(ts))
 
     if plot:
-        plt.plot(lag_acf)
-        plt.axhline(y=-conf_level,linestyle='--',color='gray')
-        plt.axhline(y=conf_level,linestyle='--',color='gray')
-        plt.title('Autocorrelation Function')
-        plt.show(block=True)
+        if ax is None:
+            ax = plt.gca(xlim=(1, nlags), ylim=(-1.0, 1.0))
+
+        ax.plot(lag_acf)
+        ax.axhline(y=-conf_level, linestyle='--', color='gray')
+        ax.axhline(y=conf_level, linestyle='--', color='gray')
+        return lag_acf, conf_level, ax
 
     return lag_acf, conf_level
 
@@ -109,7 +146,7 @@ def pacf(ts, nlags=20, method='ols', alpha=None, plot=False):
 
     if plot:
         plt.plot(lag_pacf)
-        plt.axhline(y=0,linestyle='--',color='gray')
+        plt.axhline(y=0,linestyle='--', color='gray')
         if alpha is not None:
             plt.plot(confint[:, 0], linestyle='--', color='red')
             plt.plot(confint[:, 1], linestyle='--', color='red')
@@ -126,7 +163,7 @@ def pacf(ts, nlags=20, method='ols', alpha=None, plot=False):
 
 def test_stationarity(ts, to_file=''):
     """
-    Perform Dickey-Fuller test
+    Perform Augmented Dickey-Fuller test
     """
 
     if isinstance(ts, np.ndarray):

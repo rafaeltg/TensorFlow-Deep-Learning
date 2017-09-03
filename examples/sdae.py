@@ -31,11 +31,9 @@ def run_sdae():
     sdae = StackedAutoencoder(
         layers=[DenoisingAutoencoder(n_hidden=32,
                                      enc_activation='relu',
-                                     corr_type='masking',
                                      corr_param=0.1),
                 DenoisingAutoencoder(n_hidden=16,
                                      enc_activation='relu',
-                                     corr_type='masking',
                                      corr_param=0.1)
         ],
         nb_epochs=100

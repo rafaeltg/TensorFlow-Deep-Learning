@@ -51,16 +51,7 @@ def save_model(model, dir=None, file_name=None):
     elif not os.path.exists(dir):
         os.makedirs(dir)
 
-    if file_name is None:
-        file_name = model.name
-
-    cfg = model.to_json()
-
-    if model.is_built():
-        cfg['weights'] = os.path.join(dir, file_name + '.h5')
-        k_models.save_model(getattr(model, '_model'), cfg['weights'])
-
-    save_json(cfg, os.path.join(dir, file_name+'.json'))
+    model.save(dir, file_name)
 
 
 def load_model(config=None):
@@ -104,6 +95,3 @@ def load_json(inp):
 def save_json(data, file_path, sort_keys=True):
     with open(file_path, 'w') as outfile:
         json.dump(data, outfile, sort_keys=sort_keys, indent=4, ensure_ascii=False)
-
-
-

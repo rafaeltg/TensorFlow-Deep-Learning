@@ -136,6 +136,20 @@ class Model:
             }
         }
 
+    def save(self, dir='', file_name=None):
+        assert os.path.exists(dir)
+
+        if file_name is None:
+            file_name = self.name
+
+        cfg = self.to_json()
+
+        if self.is_built():
+            cfg['weights'] = os.path.join(dir, file_name + '.h5')
+            k_models.save_model(self._model, cfg['weights'])
+
+        save_json(cfg, os.path.join(dir, file_name+'.json'))
+
     def load_model(self, model_path, custom_objs=None):
         file_path = model_path
         if os.path.isdir(model_path):

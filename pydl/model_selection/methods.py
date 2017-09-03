@@ -28,7 +28,6 @@ class TimeSeriesSplit:
         assert len(X) >= (self.window+self.horizon), 'window size plus horizon size cannot be greater than input size!'
 
         starts_test = list(range(self.window, len(X)-self.horizon+1, self.by))
-        #print(starts_test, len(X)-self.horizon+1)
 
         if self.fixed:
             trains = [range(test_start-self.window, test_start) for test_start in starts_test]
